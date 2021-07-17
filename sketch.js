@@ -1,4 +1,5 @@
 var controlsHeight = document.getElementById("controlMain").offsetHeight 
+p5.disableFriendlyErrors = true; // disables FES
 
 var animSpeed = 4
 const easing = 0.05 * animSpeed
