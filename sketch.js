@@ -473,10 +473,10 @@ function setup() {
   startCellR = 0
   startCellC = 0
 
-  board[8][8].type = CLICK_END
+  board[13][28].type = CLICK_END
 
-  endCellR = 8
-  endCellC = 8
+  endCellR = 13
+  endCellC = 28
 
   console.log(board)
 }
