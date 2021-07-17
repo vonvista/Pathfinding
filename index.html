@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.2.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.2.0/addons/p5.sound.min.js"></script>
+
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <meta charset="utf-8" />
+    
+    <meta name="description" content="Stack and Queue Visualizer/Simulator web app">
+    <meta name="keywords" content="Stacks, Queues, Visualizer, Algorithms,Data Structures, Simulator">
+    <meta name="author" content="Von Vista">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  </head>
+  <body>
+    <div id="controlMain">
+      <div class="controls" style="align-items: center;margin:0px;"> 
+        <h1>Title</h1>
+        <p class="headerContainer">Created by Von Vista</p>
+        <a class="headerContainer" href="https://github.com/VonVista">> Github</a>
+        <a class="headerContainer" href="https://github.com/VonVista/Linked-List">> Project</a>
+      </div>
+      <div id="controlPanel" class="controlsParent">
+        <div class="controls"> 
+
+          <button onClick = handleWall() class="controlButton" style="background-color:#7e2929">Create Wall</button>
+          <button onClick = handleStart() class="controlButton" style="background-color:#7e2929">Create Start</button>
+          <button onClick = handleEnd() class="controlButton" style="background-color:#7e2929">Create End</button>
+          <button onClick = handleBFS() class="controlButton" style="background-color:#7e2929">Create BFS</button>
+          <button onClick = clearAll() class="controlButton" style="background-color:#7e2929">Clear Board</button>
+         
+          <button onClick = handleDebug() class="controlButton" style="background-color:#000000">DEBUG</button>
+
+
+          <p class="controlsTitle" style="margin-left:10px;">Animation Speed</p>
+          <input type="range" oninput=handleSliderAnimChange() min="1" max="20" step="0.25" value="4" class="slider" id="myRange">
+          <p class="controlsTitle" id=animSlider></p>
+
+
+        </div>
+
+        <div class="controls"> 
+          <input type="text" id="queueElement" placeholder="Input string to test"
+          class="input_field" style="background-color:#797e29"></input>
+          <button onClick = handleQueue() class="controlButton" style="background-color:#797e29">Button</button>
+        </div>
+
+      </div>
+    </div>
+
+    <script src="sketch.js"></script>
+    <div id="sketchHolder"></div>
+  </body>
+</html>
