@@ -4,11 +4,11 @@ p5.disableFriendlyErrors = true; // disables FES
 var animSpeed = 4
 const easing = 0.05 * animSpeed
 
-const cellAnimEasing = 0.025
+const cellAnimEasing = 0.03 * 4
 
 var clickMode
 
-var rectSize = 35;
+var rectSize = 30;
 
 //COLORS
 const YELLOW = [255, 242, 0]
@@ -107,13 +107,17 @@ class Cell {
   }
   async travelledAnimation() {
 
-    for(let i = 0; i <= (75); i++){
+    this.fillColor[0] = Math.floor(Math.random() * 255);
+    this.fillColor[1] = Math.floor(Math.random() * 255);
+    this.fillColor[2] = Math.floor(Math.random() * 255);
+
+    for(let i = 0; i <= (20); i++){
       this.animRect = this.animRect + (rectSize - this.animRect) * cellAnimEasing
       this.rectroundness = this.rectroundness + (0 - this.rectroundness) * cellAnimEasing
       
-      this.fillColor[0] = map(i, 0, 75, this.fillColor[0], 170, true)
-      this.fillColor[1] = map(i, 0, 75, this.fillColor[1], 27, true)
-      this.fillColor[2] = map(i, 0, 75, this.fillColor[2], 134, true)
+      this.fillColor[0] = map(i, 0, 80, this.fillColor[0], 170, true)
+      this.fillColor[1] = map(i, 0, 80, this.fillColor[1], 27, true)
+      this.fillColor[2] = map(i, 0, 80, this.fillColor[2], 134, true)
 
       if(this.cancelAnim == true){
         this.cancelAnim = false
@@ -121,17 +125,17 @@ class Cell {
       }
 
       //console.log(this.fillColor)
-      await new Promise(resolve => setTimeout(resolve,1));
+      await new Promise(resolve => setTimeout(resolve,3));
     }
 
-    for(let i = 0; i <= (75); i++){
+    for(let i = 0; i <= (20); i++){
       this.animRect = this.animRect + (rectSize - this.animRect) * cellAnimEasing
       this.rectroundness = this.rectroundness + (0 - this.rectroundness) * cellAnimEasing
       
 
-      this.fillColor[0] = map(i, 0, 75, this.fillColor[0], 27, true)
-      this.fillColor[1] = map(i, 0, 75, this.fillColor[1], 101, true)
-      this.fillColor[2] = map(i, 0, 75, this.fillColor[2], 171, true)
+      this.fillColor[0] = map(i, 0, 80, this.fillColor[0], 27, true)
+      this.fillColor[1] = map(i, 0, 80, this.fillColor[1], 101, true)
+      this.fillColor[2] = map(i, 0, 80, this.fillColor[2], 171, true)
 
       if(this.cancelAnim == true){
         this.cancelAnim = false
@@ -139,7 +143,7 @@ class Cell {
       }
 
       //console.log(this.fillColor)
-      await new Promise(resolve => setTimeout(resolve,1));
+      await new Promise(resolve => setTimeout(resolve,3));
     }
 
     // for(let i = 0; i <= (150); i++){
@@ -383,12 +387,24 @@ async function bfs(startNodeR, startNodeC, endNodeR, endNodeC) {
     
     backtrackCell = board[endNodeR][endNodeC].prevCell
 
+    let path = []
+
     while(backtrackCell != board[startNodeR][startNodeC]){
 
-      backtrackCell.type = CELL_PATH
+      path.push(backtrackCell)
       backtrackCell = backtrackCell.prevCell
 
-      await sleep (50)
+      
+    }
+
+    console.log(path)
+
+    while(path.length != 0){
+
+      let current = path.pop()
+      current.type = CELL_PATH
+
+      await sleep (20)
     }
 
   }
@@ -396,13 +412,23 @@ async function bfs(startNodeR, startNodeC, endNodeR, endNodeC) {
   enableButtonControls()
 }
 
+async function clearRow(row) {
+  for (let x = 0; x < board[row].length; x++) {
+      
+    if(board[row][x].type != null) {
+      board[row][x].type = null
+      await sleep(1)
+    }
+
+    
+  }
+}
+
 async function clearAll() {
   for (let y = 0; y < board.length; y++) {
 
-    for (let x = 0; x < board[y].length; x++) {
-      
-      if(board[y][x].type != null) board[y][x].type = null
-    }
+    clearRow(y)
+    await sleep(30)
   }
 
   startCellR = null
@@ -411,6 +437,27 @@ async function clearAll() {
   endCellC = null
 
 }
+
+// async function clearAll() {
+//   for (let y = 0; y < board.length; y++) {
+
+//     for (let x = 0; x < board[y].length; x++) {
+      
+//       if(board[y][x].type != null) {
+//         board[y][x].type = null
+//         await sleep(1)
+//       }
+
+      
+//     }
+//   }
+
+//   startCellR = null
+//   startCellC = null
+//   endCellR = null
+//   endCellC = null
+
+// }
 
 // FUNCTIONS FOR BUTTON CONTROLS
 
@@ -434,7 +481,7 @@ function handleBFS() {
   bfs(startCellR, startCellC, endCellR, endCellC)
 }
 
-let boardWidth = 30, boardHeight = 15
+let boardWidth = 35, boardHeight = 20
 let board = []
 let startCellR = null
 let startCellC = null
@@ -463,7 +510,7 @@ function setup() {
       var cell = new Cell(width/2 - (rectSize * (boardWidth - 1))/2 + rectSize * x, 
       height/2 - (rectSize * (boardHeight - 1))/2 + rectSize * y)
       
-      console.log(cell)
+      
       board[y].push(cell)
     }
   }
@@ -490,6 +537,8 @@ function draw() {
     for (let x = 0; x < board[y].length; x++) {
       
       board[y][x].draw()
+
+      
     }
   }
 }
