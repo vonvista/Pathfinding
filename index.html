@@ -28,12 +28,9 @@
           <button onClick = handleWall() class="controlButton" style="background-color:#7e2929">Create Wall</button>
           <button onClick = handleStart() class="controlButton" style="background-color:#7e2929">Create Start</button>
           <button onClick = handleEnd() class="controlButton" style="background-color:#7e2929">Create End</button>
-          <button onClick = handleBFS() class="controlButton" style="background-color:#7e2929">Create BFS</button>
-          <button onClick = clearAll() class="controlButton" style="background-color:#7e2929">Clear Board</button>
+          <button onClick = handleRemove() class="controlButton" style="background-color:#7e2929">Delete Cell</button>
          
-          <button onClick = handleDebug() class="controlButton" style="background-color:#000000">DEBUG</button>
-
-
+      
           <p class="controlsTitle" style="margin-left:10px;">Animation Speed</p>
           <input type="range" oninput=handleSliderAnimChange() min="1" max="20" step="0.25" value="4" class="slider" id="myRange">
           <p class="controlsTitle" id=animSlider></p>
@@ -42,14 +39,19 @@
         </div>
 
         <div class="controls"> 
-          <input type="text" id="queueElement" placeholder="Input string to test"
-          class="input_field" style="background-color:#797e29"></input>
-          <button onClick = handleQueue() class="controlButton" style="background-color:#797e29">Button</button>
+          <button onClick = handleBFS() class="controlButton" style="background-color:#7e2929">Run BFS</button>
+          <button onClick = randomWalls() class="controlButton" style="background-color:#7e2929">Random Walls</button>
+          <button onClick = handleClearBoard() class="controlButton" style="background-color:#7e2929">Clear Board</button>
+         
+          <button onClick = handleDebug() class="controlButton" style="background-color:#000000">DEBUG</button>
+
+
         </div>
 
       </div>
     </div>
 
+    
     <script src="sketch.js"></script>
     <div id="sketchHolder"></div>
   </body>

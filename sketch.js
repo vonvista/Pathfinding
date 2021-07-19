@@ -1,14 +1,28 @@
+
+
 var controlsHeight = document.getElementById("controlMain").offsetHeight 
 p5.disableFriendlyErrors = true; // disables FES
 
+
+
 var animSpeed = 4
 const easing = 0.05 * animSpeed
+
+var disableControls = false
 
 const cellAnimEasing = 0.03 * 4
 
 var clickMode
 
 var rectSize = 30;
+
+var isStartAnimRunning = false;
+var isEndAnimRunning = false;
+
+//PROMISES
+
+var promises = []
+
 
 //COLORS
 const YELLOW = [255, 242, 0]
@@ -26,18 +40,21 @@ const CLICK_END = "end"
 const CLICK_VISIT = "visit"
 const CLICK_DEBUG = "debug"
 const CELL_PATH = "path"
-
+const CLICK_DELETE = "delete"
 
 function sleep(ms){
   return new Promise(resolve => setTimeout(resolve,ms));
 }
 
+function test() {
+  promises.shift()
+  console.log("WORX")
+}
 
 class Cell {
   constructor(x, y) {
     this.x = x
     this.y = y
-
 
     this.type = null
 
@@ -59,7 +76,8 @@ class Cell {
     if(this.prevType != this.type){
       switch(this.type) {
         case CLICK_WALL:
-          this.wallAnimation()
+          //disableButtonControls()
+          promises.push(this.wallAnimation())
           break
         case CLICK_START:
           this.startAnimation()
@@ -68,10 +86,10 @@ class Cell {
           this.endAnimation()
           break
         case CLICK_VISIT:
-          this.travelledAnimation()
+          promises.push(this.travelledAnimation())
           break
         case CELL_PATH:
-          this.colorAnimation(255, 217, 0)
+          promises.push(this.colorAnimation(255, 217, 0))
           this.cancelAnim = true
           break
         default:
@@ -88,7 +106,7 @@ class Cell {
     else {
       fill(255,255,255)
     }
-
+    stroke(28, 42, 53)
     rect(this.x, this.y, rectSize, rectSize)
     //console.log(this.x)
     fill(this.fillColor[0],this.fillColor[1],this.fillColor[2])
@@ -125,7 +143,7 @@ class Cell {
       }
 
       //console.log(this.fillColor)
-      await new Promise(resolve => setTimeout(resolve,3));
+      await new Promise(resolve => setTimeout(resolve,1));
     }
 
     for(let i = 0; i <= (20); i++){
@@ -143,7 +161,7 @@ class Cell {
       }
 
       //console.log(this.fillColor)
-      await new Promise(resolve => setTimeout(resolve,3));
+      await new Promise(resolve => setTimeout(resolve,1));
     }
 
     // for(let i = 0; i <= (150); i++){
@@ -161,6 +179,7 @@ class Cell {
     //   //console.log(this.fillColor)
     //   await sleep(1)
     // }
+    promises.shift()
 
     this.animRect = rectSize
     this.rectheight = rectSize
@@ -174,10 +193,12 @@ class Cell {
 
     this.fillColor = [0,0,0]
     
-
-    for(let i = 0; i <= (150); i++){
+    
+    for(let i = 0; i <= (40); i++){
       this.animRect = this.animRect + (rectSize - this.animRect) * cellAnimEasing
-      this.rectroundness = this.rectroundness + (0 - this.rectroundness) * cellAnimEasing
+      // this.rectroundness = this.rectroundness + (0 - this.rectroundness) * cellAnimEasing
+
+      // this.animRect = Math.floor(map(i, 0, 40, 0, rectSize, true))
 
       //console.log(this.fillColor)
       await new Promise(resolve => setTimeout(resolve,1));
@@ -186,6 +207,8 @@ class Cell {
     this.animRect = rectSize
     this.rectheight = rectSize
     this.rectroundness = 0
+
+    promises.shift()
     
   }
 
@@ -197,9 +220,11 @@ class Cell {
     this.fillColor = [r,g,b]
 
 
-    for(let i = 0; i <= (150); i++){
+    for(let i = 0; i <= (40); i++){
       this.animRect = this.animRect + (rectSize - this.animRect) * cellAnimEasing
       this.rectroundness = this.rectroundness + (0 - this.rectroundness) * cellAnimEasing
+
+      
 
       //console.log(this.fillColor)
       await sleep(2)
@@ -208,6 +233,8 @@ class Cell {
     this.animRect = rectSize
     this.rectheight = rectSize
     this.rectroundness = 0
+
+    promises.shift()
     
   }
 
@@ -218,8 +245,9 @@ class Cell {
 
     this.fillColor = [110,110,110]
 
+    isStartAnimRunning = true 
 
-    for(let i = 0; i <= (150); i++){
+    for(let i = 0; i <= (40); i++){
       this.animRect = this.animRect + (rectSize - this.animRect) * cellAnimEasing
       this.rectroundness = this.rectroundness + (0 - this.rectroundness) * cellAnimEasing
 
@@ -230,6 +258,10 @@ class Cell {
     this.animRect = rectSize
     this.rectheight = rectSize
     this.rectroundness = 0
+
+    isStartAnimRunning = false 
+
+    console.log("FINISHED")
   }
 
   async endAnimation() {
@@ -239,8 +271,9 @@ class Cell {
 
     this.fillColor = [43, 255, 0]
 
+    isEndAnimRunning = true 
 
-    for(let i = 0; i <= (150); i++){
+    for(let i = 0; i <= (40); i++){
       this.animRect = this.animRect + (rectSize - this.animRect) * cellAnimEasing
 
       //console.log(this.fillColor)
@@ -250,15 +283,19 @@ class Cell {
     this.animRect = rectSize
     this.rectheight = rectSize
     this.rectroundness = 0
+
+    console.log("DONE")
+
+    isEndAnimRunning = false
   }
 
   async noneAnimation() {
-    for(let i = 0; i <= (25); i++){
+    for(let i = 0; i <= (20); i++){
       // this.animRect = this.animRect + (0 - this.animRect) * cellAnimEasing
       // this.rectroundness = this.rectroundness + (50 - this.rectroundness) * cellAnimEasing
 
-      this.animRect = Math.floor(map(i, 0, 25, rectSize, 0, true))
-      this.rectroundness = Math.floor(map(i, 0, 25, 0, 50, true))
+      this.animRect = Math.floor(map(i, 0, 20, rectSize, 0, true))
+      this.rectroundness = Math.floor(map(i, 0, 20, 0, 50, true))
 
 
       //console.log(this.fillColor)
@@ -281,6 +318,7 @@ function disableButtonControls() {
   for(button of buttonControls){
     button.disabled = true
   }
+  var disableControls = true
 }
 
 function enableButtonControls() {
@@ -288,6 +326,7 @@ function enableButtonControls() {
     button.disabled = false
   }
   //statusText = "Standby"
+  var disableControls = false
 }
 
 document.getElementById("animSlider").innerHTML = document.getElementById("myRange").value
@@ -306,6 +345,8 @@ function handleSliderAnimChange() {
 
 dr = [-1, 1, 0, 0]
 dc = [0, 0, 1, -1]
+
+
 
 async function bfs(startNodeR, startNodeC, endNodeR, endNodeC) {
 
@@ -383,7 +424,7 @@ async function bfs(startNodeR, startNodeC, endNodeR, endNodeC) {
 
   if(complete) {
 
-    await sleep (1000)
+    await Promise.all(promises)
     
     backtrackCell = board[endNodeR][endNodeC].prevCell
 
@@ -412,6 +453,17 @@ async function bfs(startNodeR, startNodeC, endNodeR, endNodeC) {
   enableButtonControls()
 }
 
+async function randomWalls() {
+  for (let r = 0; r < boardHeight; r++) {
+    for (let c = 0; c < boardWidth; c++) {
+      if(Math.floor(Math.random() * 3) == 1 && board[r][c].type == null){
+        board[r][c].type = CLICK_WALL
+        await sleep(20)
+      }
+    }
+  }
+}
+
 async function clearRow(row) {
   for (let x = 0; x < board[row].length; x++) {
       
@@ -422,14 +474,17 @@ async function clearRow(row) {
 
     
   }
+  promises.shift()
 }
 
 async function clearAll() {
   for (let y = 0; y < board.length; y++) {
 
-    clearRow(y)
+    promises.push(clearRow(y))
     await sleep(30)
   }
+
+  promises.shift()
 
   startCellR = null
   startCellC = null
@@ -477,6 +532,17 @@ function handleDebug() {
   clickMode = CLICK_DEBUG
 }
 
+function handleRemove() {
+  clickMode = CLICK_DELETE
+}
+
+function handleClearBoard() {
+  console.log(promises)
+  if(promises.length != 0) return
+
+  promises.push(clearAll())
+}
+
 function handleBFS() {
   bfs(startCellR, startCellC, endCellR, endCellC)
 }
@@ -490,8 +556,11 @@ let endCellC = null
 
 let statusText = ""
 
+let promisesResetTrigger = false
+
 
 function setup() {
+  frameRate(30)
   //createCanvas(400, 400);
   let cnv = createCanvas(windowWidth, windowHeight - controlsHeight);
   cnv.parent("sketchHolder");
@@ -522,15 +591,20 @@ function setup() {
 
   board[13][28].type = CLICK_END
 
-  endCellR = 13
-  endCellC = 28
+  endCellR = 15
+  endCellC = 20
 
   console.log(board)
 }
 
-function draw() {
-  //background(28, 42, 53);
-  background(200)
+async function draw() {
+  background(28, 42, 53);
+  //background(200)
+
+  // if(promisesResetTrigger){
+  //   promisesResetTrigger = false
+  //   promises = []
+  // }
 
   for (let y = 0; y < board.length; y++) {
 
@@ -541,6 +615,11 @@ function draw() {
       
     }
   }
+
+  // console.log(promises.length)
+  // OK MEDYO MAGICAL TO FOR ME, pero gist of it is, nagrurun parin yung nasa taas, di lang tumatagos kumbaga
+  await Promise.all(promises)
+  //promisesResetTrigger = true
 }
 
 
@@ -552,43 +631,63 @@ function mousePressed() {
 
       if(selectedCell) {
 
-        switch(clickMode){
-          case CLICK_WALL:
+        if(clickMode == CLICK_WALL){
 
-            selectedCell.type = clickMode
+          selectedCell.type = clickMode
 
-            break
-          case CLICK_START:
-
-            if(startCellR != null) board[startCellR][startCellC].type = null
-
-            selectedCell.type = clickMode
-
-            startCellR = y
-            startCellC = x
-
-            break
-          case CLICK_END:
-
-            if(endCellR != null) board[endCellR][endCellC].type = null
-            
-            selectedCell.type = clickMode
-
-            endCellR = y
-            endCellC = x
-
-            break
-          case CLICK_DEBUG:
-            
-            selectedCell.prevCell.type = null
-
-            break
         }
-        
+        else if(clickMode == CLICK_START && isStartAnimRunning == false){
+          
+          if(startCellR != null) board[startCellR][startCellC].type = null
+
+          selectedCell.type = clickMode
+
+          startCellR = y
+          startCellC = x
+
+        }
+        else if(clickMode == CLICK_END && isEndAnimRunning == false){
+
+          if(endCellR != null) board[endCellR][endCellC].type = null
+          
+          selectedCell.type = clickMode
+
+          endCellR = y
+          endCellC = x
+
+        }
+        else if(clickMode == CLICK_DEBUG){
+            
+          selectedCell.prevCell.type = null
+          
+        }
+
+        else if(clickMode == CLICK_DEBUG){
+            
+          selectedCell.prevCell.type = null
+          
+        }
+        else if(clickMode == CLICK_DELETE){
+          
+          if(selectedCell.type == CLICK_START){
+            console.log("HERE")
+            startCellC = null
+            startCellR = null
+          }
+          else if(selectedCell.type == CLICK_END){
+            endCellC = null
+            endCellR = null
+          }
+
+          selectedCell.type = null
+          
+          
+        }
         
       }
     }
   }
+  
 }
 
 function mouseDragged() {
@@ -597,13 +696,27 @@ function mouseDragged() {
       let selectedCell = board[y][x].clicked()
 
       if(selectedCell) {
-        switch(clickMode){
-          case CLICK_WALL:
+        if(clickMode == CLICK_WALL){
 
-            selectedCell.type = clickMode
+          selectedCell.type = clickMode
 
-            break
+        }
 
+        else if(clickMode == CLICK_DELETE){
+          
+          if(selectedCell.type == CLICK_START){
+            console.log("HERE")
+            startCellC = null
+            startCellR = null
+          }
+          else if(selectedCell.type == CLICK_END){
+            endCellC = null
+            endCellR = null
+          }
+
+          selectedCell.type = null
+          
+          
         }
         
         
