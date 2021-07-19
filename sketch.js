@@ -52,11 +52,15 @@ function test() {
 }
 
 class Cell {
-  constructor(x, y) {
+  constructor(x, y, row, column) {
     this.x = x
     this.y = y
+    this.row = row
+    this.column = column
 
     this.type = null
+
+    this.weight = null
 
     this.prevCell = null
 
@@ -346,11 +350,11 @@ function handleSliderAnimChange() {
 dr = [-1, 1, 0, 0]
 dc = [0, 0, 1, -1]
 
-
-
 async function bfs(startNodeR, startNodeC, endNodeR, endNodeC) {
 
   disableButtonControls()
+
+  await clearPathfinding()
 
   // create a visited object
   var visited = {};
@@ -453,6 +457,324 @@ async function bfs(startNodeR, startNodeC, endNodeR, endNodeC) {
   enableButtonControls()
 }
 
+async function dfs(startNodeR, startNodeC, endNodeR, endNodeC) {
+
+  disableButtonControls()
+  await clearPathfinding()
+
+  // create a visited object
+  var visited = {};
+
+  // Create an object for queue
+  var q = []
+
+  var complete = false
+
+  // add the starting node to the queue
+  
+  q.push([startNodeR, startNodeC])
+
+
+  // loop until queue is element
+  while (q.length != 0) {
+    // get the element from the queue
+   
+    var curr = q.pop();
+    var row = curr[0]
+    var col = curr[1]
+
+    //CONDITIONS FOR NOT CONTINUING
+
+    if (row < 0 || col < 0 || row >= boardHeight || col >= boardWidth) continue
+
+    if (visited[row + "," + col]) continue
+
+    if (board[row][col].type == CLICK_WALL) continue
+
+
+    visited[row + "," + col] = true
+
+    // board[row][col].prevCell = prevCell
+
+    await sleep (20)
+
+    if(row != startNodeR || col != startNodeC) board[row][col].type = CLICK_VISIT
+
+    // console.log("HERE")
+
+    for (let i = 0; i < 4; i++) {
+
+      var adjRow = row + dr[i];
+      var adjCol = col + dc[i];
+      q.push([ adjRow, adjCol ]);
+
+      if (adjRow < 0 || adjCol < 0 || adjRow >= boardHeight || adjCol >= boardWidth) continue
+
+      if (visited[adjRow + "," + adjCol]) continue
+
+      // console.log(adjRow + "," + adjCol)
+
+      if (board[adjRow][adjCol].type == CLICK_WALL) continue
+
+      board[adjRow][adjCol].prevCell = board[row][col]
+
+      //COMPLETE CONDITION
+
+      if(adjRow == endNodeR && adjCol == endNodeC) {
+        complete = true
+        break
+      }
+
+    }
+
+    if(complete) break
+
+    
+  }
+
+  if(complete) {
+
+    await Promise.all(promises)
+    
+    backtrackCell = board[endNodeR][endNodeC].prevCell
+
+    let path = []
+
+    while(backtrackCell != board[startNodeR][startNodeC]){
+
+      path.push(backtrackCell)
+      backtrackCell = backtrackCell.prevCell
+
+      
+    }
+
+    console.log(path)
+
+    while(path.length != 0){
+
+      let current = path.pop()
+      current.type = CELL_PATH
+
+      await sleep (20)
+    }
+
+  }
+
+  enableButtonControls()
+}
+
+// @TO-DO, tingnan pa natin if kaya ba sya
+
+async function dijkstra(startNodeR, startNodeC, endNodeR, endNodeC) {
+
+  disableButtonControls()
+
+  // create a visited object
+  var visited = {};
+
+  // Create an object for queue
+  var q = []
+
+  var complete = false
+
+  // add the starting node to the queue
+  
+  q.push([startNodeR, startNodeC])
+
+
+  // loop until queue is element
+  while (q.length != 0) {
+    // get the element from the queue
+   
+    var curr = q.shift();
+    var row = curr[0]
+    var col = curr[1]
+
+    //CONDITIONS FOR NOT CONTINUING
+
+    if (row < 0 || col < 0 || row >= boardHeight || col >= boardWidth) continue
+
+    if (visited[row + "," + col]) continue
+
+    if (board[row][col].type == CLICK_WALL) continue
+
+
+    visited[row + "," + col] = true
+
+    // board[row][col].prevCell = prevCell
+
+    await sleep (20)
+
+    if(row != startNodeR || col != startNodeC) board[row][col].type = CLICK_VISIT
+
+    // console.log("HERE")
+
+    for (let i = 0; i < 4; i++) {
+
+      var adjRow = row + dr[i];
+      var adjCol = col + dc[i];
+      q.push([ adjRow, adjCol ]);
+
+      if (adjRow < 0 || adjCol < 0 || adjRow >= boardHeight || adjCol >= boardWidth) continue
+
+      if (visited[adjRow + "," + adjCol]) continue
+
+      // console.log(adjRow + "," + adjCol)
+
+      if (board[adjRow][adjCol].type == CLICK_WALL) continue
+
+      board[adjRow][adjCol].prevCell = board[row][col]
+
+      //COMPLETE CONDITION
+
+      if(adjRow == endNodeR && adjCol == endNodeC) {
+        complete = true
+        break
+      }
+
+    }
+
+    if(complete) break
+
+    
+  }
+
+  enableButtonControls()
+}
+
+
+
+drMaze = [-2, 2, 0, 0]
+dcMaze = [0, 0, 2, -2]
+
+async function primMazeGen() {
+
+  var visited = []
+
+  var pathSet = []
+
+  for (let y = 0; y < boardHeight; y++) {
+    visited[y] = []
+    for (let x = 0; x < boardWidth; x++) {
+      visited[y].push(false)
+    }
+  }
+  
+  pathSet.push(board[1][1]) 
+  // for(let i = 0; i < boardHeight * boardWidth; i++){
+    
+  await fullWall()
+  await Promise.all(promises)
+
+  while(pathSet.length != 0){
+    console.log(pathSet)
+    var randCell = randInt(pathSet.length)
+
+    var cell = pathSet[randCell]
+    pathSet.splice(randCell, 1)
+
+    var row = cell.row
+    var col = cell.column
+
+    visited[row][col] = true
+
+    //cell.type = CLICK_WALL
+
+    // GETTING VISITED NEIGHBORS
+
+    var visitedNeighbors = []
+
+    for (let i = 0; i < 4; i++) {
+
+      var adjRow = row + drMaze[i];
+      var adjCol = col + dcMaze[i];
+
+      if (adjRow < 0 || adjCol < 0 || adjRow >= boardHeight || adjCol >= boardWidth) continue
+
+      if (visited[adjRow][adjCol] == false) continue
+
+      visitedNeighbors.push(board[adjRow][adjCol])
+
+      // board[adjRow][adjCol].type = CLICK_WALL
+    }
+    console.log(visitedNeighbors)
+
+    if(visitedNeighbors.length != 0){
+
+      var randConnectCell = randInt(visitedNeighbors.length)
+      var connectCell = visitedNeighbors[randConnectCell]
+
+      if(cell.type == null && connectCell.type == null) continue
+
+
+      cell.type = null
+      connectCell.type = null
+      //console.log(connectCell)
+ 
+      //visited[connectCell.row][connectCell.column] = true
+
+      //pathSet.splice(randConnectCell, 1)
+
+      //DECIDE THE DIRECTION
+
+      //TOP
+      if(connectCell.row < cell.row && connectCell.column == cell.column){
+        board[cell.row - 1][cell.column].type = null
+      }
+
+      //BOTTOM
+      else if(connectCell.row > cell.row && connectCell.column == cell.column){
+        board[cell.row + 1][cell.column].type = null
+      }
+
+      //LEFT
+      else if(connectCell.row == cell.row && connectCell.column < cell.column){
+        board[cell.row][cell.column - 1].type = null
+      }
+
+      //RIGHT
+      else if(connectCell.row == cell.row && connectCell.column > cell.column){
+        board[cell.row][cell.column + 1].type = null
+      }
+
+      await sleep(5)
+    }
+
+    // PUSH UNVISITED NEIGHBORS TO SET
+
+    for (let i = 0; i < 4; i++) {
+
+      var adjRow = row + drMaze[i];
+      var adjCol = col + dcMaze[i];
+
+      if (adjRow < 0 || adjCol < 0 || adjRow >= boardHeight || adjCol >= boardWidth) continue
+
+      if (visited[adjRow][adjCol] == true) continue
+
+      pathSet.push(board[adjRow][adjCol])
+      
+      board[adjRow][adjCol].type = CLICK_WALL
+    }
+
+  }
+  console.log(pathSet)
+}
+
+async function fullWall() {
+  for (let y = 0; y < boardHeight; y++) {
+    
+    for (let x = 0; x < boardWidth; x++) {
+      board[y][x].type = CLICK_WALL
+    }
+
+    await sleep(20)
+  }
+}
+
+function randInt(max){
+  return Math.floor(Math.random() * max)
+}
+
 async function randomWalls() {
   for (let r = 0; r < boardHeight; r++) {
     for (let c = 0; c < boardWidth; c++) {
@@ -490,6 +812,30 @@ async function clearAll() {
   startCellC = null
   endCellR = null
   endCellC = null
+
+}
+
+async function clearRowPathfinding(row) {
+  for (let x = 0; x < board[row].length; x++) {
+      
+    if(board[row][x].type == CLICK_VISIT || board[row][x].type == CELL_PATH) {
+      board[row][x].type = null
+      await sleep(1)
+    }
+
+    
+  }
+  promises.shift()
+}
+
+async function clearPathfinding() {
+  for (let y = 0; y < board.length; y++) {
+
+    promises.push(clearRowPathfinding(y))
+    await sleep(30)
+  }
+
+  promises.shift()
 
 }
 
@@ -547,7 +893,11 @@ function handleBFS() {
   bfs(startCellR, startCellC, endCellR, endCellC)
 }
 
-let boardWidth = 35, boardHeight = 20
+function handleDFS() {
+  dfs(startCellR, startCellC, endCellR, endCellC)
+}
+
+let boardWidth = 30+1, boardHeight = 15+2
 let board = []
 let startCellR = null
 let startCellC = null
@@ -577,22 +927,24 @@ function setup() {
     for (let x = 0; x < boardWidth; x++) {
       //var cell = new Cell(width/2 - (rectSize * boardWidth) + rectSize * x, height/2 - (rectSize * boardHeight) + rectSize * y)
       var cell = new Cell(width/2 - (rectSize * (boardWidth - 1))/2 + rectSize * x, 
-      height/2 - (rectSize * (boardHeight - 1))/2 + rectSize * y)
+      height/2 - (rectSize * (boardHeight - 1))/2 + rectSize * y,
+      y, 
+      x)
       
       
       board[y].push(cell)
     }
   }
 
-  board[0][0].type = CLICK_START
+  // board[0][0].type = CLICK_START
 
-  startCellR = 0
-  startCellC = 0
+  // startCellR = 0
+  // startCellC = 0
 
-  board[13][28].type = CLICK_END
+  // board[13][28].type = CLICK_END
 
-  endCellR = 15
-  endCellC = 20
+  // endCellR = 15
+  // endCellC = 20
 
   console.log(board)
 }

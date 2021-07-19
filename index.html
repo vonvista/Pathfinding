@@ -3,6 +3,7 @@
   <head>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.2.0/p5.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.2.0/addons/p5.sound.min.js"></script>
+    <script src="minheap.js"></script>
 
     <title>Title</title>
     <link rel="stylesheet" type="text/css" href="style.css">
@@ -39,10 +40,17 @@
         </div>
 
         <div class="controls"> 
+          <p>Pathfinding</p>
+
           <button onClick = handleBFS() class="controlButton" style="background-color:#7e2929">Run BFS</button>
+          <button onClick = handleDFS() class="controlButton" style="background-color:#7e2929">Run DFS</button>
+          
+          <p>Maze Gen</p>
           <button onClick = randomWalls() class="controlButton" style="background-color:#7e2929">Random Walls</button>
+          <button onClick = primMazeGen() class="controlButton" style="background-color:#7e2929">Prim Maze Gen</button>
           <button onClick = handleClearBoard() class="controlButton" style="background-color:#7e2929">Clear Board</button>
          
+
           <button onClick = handleDebug() class="controlButton" style="background-color:#000000">DEBUG</button>
 
 
@@ -51,7 +59,7 @@
       </div>
     </div>
 
-    
+
     <script src="sketch.js"></script>
     <div id="sketchHolder"></div>
   </body>
