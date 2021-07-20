@@ -1,8 +1,5 @@
-
-
 var controlsHeight = document.getElementById("controlMain").offsetHeight 
 p5.disableFriendlyErrors = true; // disables FES
-
 
 
 var animSpeed = 4
@@ -46,9 +43,8 @@ function sleep(ms){
   return new Promise(resolve => setTimeout(resolve,ms));
 }
 
-function test() {
-  promises.shift()
-  console.log("WORX")
+function randInt(max){
+  return Math.floor(Math.random() * max)
 }
 
 class Cell {
@@ -311,7 +307,6 @@ class Cell {
     this.rectroundness = 50
   }
 }
-
 
 
 //FUNCTION FOR ANIMATION SLIDER
@@ -708,14 +703,8 @@ async function primMazeGen() {
 
 
       cell.type = null
-      connectCell.type = null
-      //console.log(connectCell)
- 
-      //visited[connectCell.row][connectCell.column] = true
 
-      //pathSet.splice(randConnectCell, 1)
-
-      //DECIDE THE DIRECTION
+      await sleep(5)
 
       //TOP
       if(connectCell.row < cell.row && connectCell.column == cell.column){
@@ -736,6 +725,10 @@ async function primMazeGen() {
       else if(connectCell.row == cell.row && connectCell.column > cell.column){
         board[cell.row][cell.column + 1].type = null
       }
+
+      await sleep(5)
+
+      connectCell.type = null
 
       await sleep(5)
     }
@@ -760,6 +753,190 @@ async function primMazeGen() {
   console.log(pathSet)
 }
 
+async function dfsMazeGen() {
+
+  var visited = []
+
+  var pathSet = []
+
+  for (let y = 0; y < boardHeight; y++) {
+    visited[y] = []
+    for (let x = 0; x < boardWidth; x++) {
+      visited[y].push(false)
+    }
+  }
+  //CELL, PARENT si Path Set
+
+  pathSet.push(board[1][1]) 
+  // for(let i = 0; i < boardHeight * boardWidth; i++){
+    
+  await fullWall()
+  await Promise.all(promises)
+
+  // while(pathSet.length != 0){
+
+  while(pathSet.length != 0){
+
+    //console.log(pathSet)
+    
+    cell = pathSet.pop()
+
+    //cell.type = null
+    
+    var row = cell.row
+    var col = cell.column
+
+    visited[row][col] = true
+
+    //cell.type = CLICK_WALL
+
+    // GETTING VISITED NEIGHBORS
+
+    var visitedNeighbors = []
+
+    for (let i = 0; i < 4; i++) {
+
+      var adjRow = row + drMaze[i];
+      var adjCol = col + dcMaze[i];
+
+      if (adjRow < 0 || adjCol < 0 || adjRow >= boardHeight || adjCol >= boardWidth) continue
+
+      if (visited[adjRow][adjCol] == true) continue
+
+      visitedNeighbors.push(board[adjRow][adjCol])
+
+      // board[adjRow][adjCol].type = CLICK_WALL
+    }
+    console.log(visitedNeighbors)
+
+    if(visitedNeighbors.length != 0){
+
+      pathSet.push(cell)
+
+      var randConnectCell = randInt(visitedNeighbors.length)
+      var connectCell = visitedNeighbors[randConnectCell]
+
+      //if(cell.type == null && connectCell.type == null) continue
+
+      visited[connectCell.row][connectCell.column] = true
+
+      pathSet.push(connectCell)
+
+      cell.type = null
+
+      //await sleep(200)
+
+      //TOP
+      if(connectCell.row < cell.row && connectCell.column == cell.column){
+        board[cell.row - 1][cell.column].type = null
+      }
+
+      //BOTTOM
+      else if(connectCell.row > cell.row && connectCell.column == cell.column){
+        board[cell.row + 1][cell.column].type = null
+      }
+
+      //LEFT
+      else if(connectCell.row == cell.row && connectCell.column < cell.column){
+        board[cell.row][cell.column - 1].type = null
+      }
+
+      //RIGHT
+      else if(connectCell.row == cell.row && connectCell.column > cell.column){
+        board[cell.row][cell.column + 1].type = null
+      }
+
+      //await sleep(200)
+
+      connectCell.type = null
+
+      await sleep(50)
+
+      cell = connectCell
+
+    }
+
+    
+  }
+}
+
+// async function dfsMazeGen(startNodeR, startNodeC, endNodeR, endNodeC) {
+
+//   disableButtonControls()
+
+//   // create a visited object
+//   var visited = {};
+
+//   // Create an object for queue
+//   var q = []
+
+//   var complete = false
+
+//   // add the starting node to the queue
+  
+//   q.push([startNodeR, startNodeC])
+
+
+//   // loop until queue is element
+//   while (q.length != 0) {
+//     // get the element from the queue
+   
+//     var curr = q.pop();
+//     var row = curr[0]
+//     var col = curr[1]
+
+//     //CONDITIONS FOR NOT CONTINUING
+
+//     if (row < 0 || col < 0 || row >= boardHeight || col >= boardWidth) continue
+
+//     if (visited[row + "," + col]) continue
+
+//     if (board[row][col].type == CLICK_WALL) continue
+
+
+//     visited[row + "," + col] = true
+
+//     // board[row][col].prevCell = prevCell
+
+//     await sleep (20)
+
+//     if(row != startNodeR || col != startNodeC) board[row][col].type = CLICK_VISIT
+
+//     // console.log("HERE")
+
+//     for (let i = 0; i < 4; i++) {
+
+//       var adjRow = row + drMaze[i];
+//       var adjCol = col + drMaze[i];
+//       q.push([ adjRow, adjCol ]);
+
+//       if (adjRow < 0 || adjCol < 0 || adjRow >= boardHeight || adjCol >= boardWidth) continue
+
+//       if (visited[adjRow + "," + adjCol]) continue
+
+//       // console.log(adjRow + "," + adjCol)
+
+//       if (board[adjRow][adjCol].type == CLICK_WALL) continue
+
+//       board[adjRow][adjCol].prevCell = board[row][col]
+
+//       //COMPLETE CONDITION
+
+//       if(adjRow == endNodeR && adjCol == endNodeC) {
+//         complete = true
+//         break
+//       }
+
+//     }
+
+//     if(complete) break
+
+    
+//   }
+
+//   enableButtonControls()
+// }
+
 async function fullWall() {
   for (let y = 0; y < boardHeight; y++) {
     
@@ -769,10 +946,6 @@ async function fullWall() {
 
     await sleep(20)
   }
-}
-
-function randInt(max){
-  return Math.floor(Math.random() * max)
 }
 
 async function randomWalls() {
@@ -838,6 +1011,8 @@ async function clearPathfinding() {
   promises.shift()
 
 }
+
+// @ARCHIVE -> clearAll function
 
 // async function clearAll() {
 //   for (let y = 0; y < board.length; y++) {

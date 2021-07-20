@@ -5,7 +5,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.2.0/addons/p5.sound.min.js"></script>
     <script src="minheap.js"></script>
 
-    <title>Title</title>
+    <title>Pathfinding/Maze Gen</title>
     <link rel="stylesheet" type="text/css" href="style.css">
     <meta charset="utf-8" />
     
@@ -48,6 +48,8 @@
           <p>Maze Gen</p>
           <button onClick = randomWalls() class="controlButton" style="background-color:#7e2929">Random Walls</button>
           <button onClick = primMazeGen() class="controlButton" style="background-color:#7e2929">Prim Maze Gen</button>
+          <button onClick = dfsMazeGen() class="controlButton" style="background-color:#7e2929">Prim Maze Gen</button>
+         
           <button onClick = handleClearBoard() class="controlButton" style="background-color:#7e2929">Clear Board</button>
          
 
@@ -60,7 +62,7 @@
     </div>
 
 
-    <script src="sketch.js"></script>
+    <script src="pathfinding.js"></script>
     <div id="sketchHolder"></div>
   </body>
 </html>
