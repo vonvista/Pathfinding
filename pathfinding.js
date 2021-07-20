@@ -16,6 +16,8 @@ var rectSize = 30;
 var isStartAnimRunning = false;
 var isEndAnimRunning = false;
 
+var highAnimQuality = true;
+
 //PROMISES
 
 var promises = []
@@ -193,20 +195,28 @@ class Cell {
 
     this.fillColor = [0,0,0]
     
-    
-    for(let i = 0; i <= (40); i++){
-      this.animRect = this.animRect + (rectSize - this.animRect) * cellAnimEasing
-      // this.rectroundness = this.rectroundness + (0 - this.rectroundness) * cellAnimEasing
+    if(highAnimQuality){
+      for(let i = 0; i <= (40); i++){
+        this.animRect = this.animRect + (rectSize - this.animRect) * cellAnimEasing
+        // this.rectroundness = this.rectroundness + (0 - this.rectroundness) * cellAnimEasing
 
-      // this.animRect = Math.floor(map(i, 0, 40, 0, rectSize, true))
+        // this.animRect = Math.floor(map(i, 0, 40, 0, rectSize, true))
 
-      //console.log(this.fillColor)
+        //console.log(this.fillColor)
+        await new Promise(resolve => setTimeout(resolve,1));
+      }
+
+      this.animRect = rectSize
+      this.rectheight = rectSize
+      this.rectroundness = 0
+    }
+    else {
+      this.animRect = rectSize
+      this.rectheight = rectSize
+      this.rectroundness = 0
+
       await new Promise(resolve => setTimeout(resolve,1));
     }
-
-    this.animRect = rectSize
-    this.rectheight = rectSize
-    this.rectroundness = 0
 
     promises.shift()
     
@@ -290,21 +300,32 @@ class Cell {
   }
 
   async noneAnimation() {
-    for(let i = 0; i <= (20); i++){
-      // this.animRect = this.animRect + (0 - this.animRect) * cellAnimEasing
-      // this.rectroundness = this.rectroundness + (50 - this.rectroundness) * cellAnimEasing
 
-      this.animRect = Math.floor(map(i, 0, 20, rectSize, 0, true))
-      this.rectroundness = Math.floor(map(i, 0, 20, 0, 50, true))
+    if(highAnimQuality){
+      for(let i = 0; i <= (20); i++){
+        // this.animRect = this.animRect + (0 - this.animRect) * cellAnimEasing
+        // this.rectroundness = this.rectroundness + (50 - this.rectroundness) * cellAnimEasing
+
+        this.animRect = Math.floor(map(i, 0, 20, rectSize, 0, true))
+        this.rectroundness = Math.floor(map(i, 0, 20, 0, 50, true))
 
 
-      //console.log(this.fillColor)
-      //await new Promise(resolve => setTimeout(resolve,1));
+        //console.log(this.fillColor)
+        //await new Promise(resolve => setTimeout(resolve,1));
+        await sleep(1)
+      }
+
+      this.animRect = 0
+      this.rectroundness = 50
+    }
+    else {
+      this.animRect = 0
+      this.rectroundness = 50
+
       await sleep(1)
     }
 
-    this.animRect = 0
-    this.rectroundness = 50
+    
   }
 }
 
@@ -637,8 +658,6 @@ async function dijkstra(startNodeR, startNodeC, endNodeR, endNodeC) {
   enableButtonControls()
 }
 
-
-
 drMaze = [-2, 2, 0, 0]
 dcMaze = [0, 0, 2, -2]
 
@@ -860,82 +879,98 @@ async function dfsMazeGen() {
   }
 }
 
-// async function dfsMazeGen(startNodeR, startNodeC, endNodeR, endNodeC) {
 
-//   disableButtonControls()
+async function kruskalMazeGen() {
 
-//   // create a visited object
-//   var visited = {};
+  var set = new Map()
 
-//   // Create an object for queue
-//   var q = []
+  var walls = []
 
-//   var complete = false
+  var setCount = 0
 
-//   // add the starting node to the queue
-  
-//   q.push([startNodeR, startNodeC])
+  for (let y = 1; y < boardHeight; y += 2) {
+    
+    for (let x = 1; x < boardWidth; x += 2) {
+      
+      
+      set.set(board[y][x], setCount)
+      setCount++
+    }
+  }
+
+  await fullWall()
+  await Promise.all(promises)
+
+  console.log(set)
+
+  var wallOffset = 0
+
+  for (let y = 1; y < boardHeight; y += 1) {
+
+    if(wallOffset == 0) wallOffset = 1
+    else wallOffset = 0
+    
+    for (let x = 1; x < boardWidth; x += 2) {
+
+      if(y == (boardHeight - 1) || x == (boardWidth - 1) || x + wallOffset == (boardWidth - 1)) continue
+      
+      //board[y][x + wallOffset].type = CELL_PATH
+      walls.push(board[y][x + wallOffset])
+    }
+  }
+
+  // IF ODD VERTICAL YUNG WALLS, IF EVEN HORIZONTAL YUNG WALLS
+
+  let cell1, cell2, setCell1, setCell2
+
+  while(walls.length > 0){
+    let random = randInt(walls.length)
+
+    let selectedWall = walls[random]
+    walls.splice(random, 1)
+    
+    let row = selectedWall.row
+    let col = selectedWall.column
+
+    if(col % 2 == 1){
+      cell1 = board[row - 1][col]
+      cell2 = board[row + 1][col]
+
+    }
+    else {
+      cell1 = board[row][col - 1]
+      cell2 = board[row][col + 1]
+
+      
+    }
 
 
-//   // loop until queue is element
-//   while (q.length != 0) {
-//     // get the element from the queue
-   
-//     var curr = q.pop();
-//     var row = curr[0]
-//     var col = curr[1]
+    setCell1 = set.get(cell1)
+    setCell2 = set.get(cell2)
+    if(setCell1 != setCell2){
 
-//     //CONDITIONS FOR NOT CONTINUING
+      
+      set.set(cell2, setCell1)
 
-//     if (row < 0 || col < 0 || row >= boardHeight || col >= boardWidth) continue
+      for (const [key, value] of set.entries()) {
+        if(value == setCell2) set.set(key, setCell1)
+      }
+      
+      selectedWall.type = null
+      cell1.type = null
+      cell2.type = null
 
-//     if (visited[row + "," + col]) continue
+      //console.log(set)
 
-//     if (board[row][col].type == CLICK_WALL) continue
-
-
-//     visited[row + "," + col] = true
-
-//     // board[row][col].prevCell = prevCell
-
-//     await sleep (20)
-
-//     if(row != startNodeR || col != startNodeC) board[row][col].type = CLICK_VISIT
-
-//     // console.log("HERE")
-
-//     for (let i = 0; i < 4; i++) {
-
-//       var adjRow = row + drMaze[i];
-//       var adjCol = col + drMaze[i];
-//       q.push([ adjRow, adjCol ]);
-
-//       if (adjRow < 0 || adjCol < 0 || adjRow >= boardHeight || adjCol >= boardWidth) continue
-
-//       if (visited[adjRow + "," + adjCol]) continue
-
-//       // console.log(adjRow + "," + adjCol)
-
-//       if (board[adjRow][adjCol].type == CLICK_WALL) continue
-
-//       board[adjRow][adjCol].prevCell = board[row][col]
-
-//       //COMPLETE CONDITION
-
-//       if(adjRow == endNodeR && adjCol == endNodeC) {
-//         complete = true
-//         break
-//       }
-
-//     }
-
-//     if(complete) break
+      await sleep(50)
+    }
 
     
-//   }
+    
+  }
 
-//   enableButtonControls()
-// }
+}
+
 
 async function fullWall() {
   for (let y = 0; y < boardHeight; y++) {
@@ -1057,9 +1092,9 @@ function handleRemove() {
   clickMode = CLICK_DELETE
 }
 
-function handleClearBoard() {
+async function handleClearBoard() {
   console.log(promises)
-  if(promises.length != 0) return
+  await Promise.all(promises)
 
   promises.push(clearAll())
 }
@@ -1073,6 +1108,8 @@ function handleDFS() {
 }
 
 let boardWidth = 30+1, boardHeight = 15+2
+
+//let boardWidth = 15, boardHeight = 10+1
 let board = []
 let startCellR = null
 let startCellC = null
@@ -1157,6 +1194,7 @@ function mousePressed() {
       let selectedCell = board[y][x].clicked()
 
       if(selectedCell) {
+
 
         if(clickMode == CLICK_WALL){
 
