@@ -16,6 +16,8 @@ var rectSize = 30;
 var isStartAnimRunning = false;
 var isEndAnimRunning = false;
 
+var isPathFind = false
+
 var highAnimQuality = true;
 
 //PROMISES
@@ -113,6 +115,12 @@ class Cell {
     //console.log(this.x)
     fill(this.fillColor[0],this.fillColor[1],this.fillColor[2])
     rect(this.x,this.y,Math.floor(this.animRect),Math.floor(this.animRect), Math.floor(this.rectroundness))
+
+    if(this.weight != null){
+      noStroke()
+      fill(170,170,170)
+      text(this.weight.toString(), this.x, this.y)
+    }
 
     this.prevType = this.type
   }
@@ -300,6 +308,8 @@ class Cell {
   }
 
   async noneAnimation() {
+    
+
 
     if(highAnimQuality){
       for(let i = 0; i <= (20); i++){
@@ -371,6 +381,8 @@ async function bfs(startNodeR, startNodeC, endNodeR, endNodeC) {
   disableButtonControls()
 
   await clearPathfinding()
+
+  statusText = "Pathfinding: Breadth-First Search"
 
   // create a visited object
   var visited = {};
@@ -470,13 +482,19 @@ async function bfs(startNodeR, startNodeC, endNodeR, endNodeC) {
 
   }
 
+  statusText = "Standby"
+  clickMode = null
   enableButtonControls()
 }
 
 async function dfs(startNodeR, startNodeC, endNodeR, endNodeC) {
 
   disableButtonControls()
+  
   await clearPathfinding()
+
+  statusText = "Pathfinding: Depth-First Search"
+
 
   // create a visited object
   var visited = {};
@@ -585,6 +603,10 @@ async function dijkstra(startNodeR, startNodeC, endNodeR, endNodeC) {
 
   disableButtonControls()
 
+  await clearPathfinding()
+
+  statusText = "Pathfinding: Dijkstra's Algorithm"
+
   // create a visited object
   var visited = {};
 
@@ -596,6 +618,8 @@ async function dijkstra(startNodeR, startNodeC, endNodeR, endNodeC) {
   // add the starting node to the queue
   
   q.push([startNodeR, startNodeC])
+
+  board[startNodeR][startNodeC].weight = 0
 
 
   // loop until queue is element
@@ -639,9 +663,12 @@ async function dijkstra(startNodeR, startNodeC, endNodeR, endNodeC) {
 
       if (board[adjRow][adjCol].type == CLICK_WALL) continue
 
-      board[adjRow][adjCol].prevCell = board[row][col]
+      if(board[adjRow][adjCol].weight != null || board[row][col].weight + 1 > board[adjRow][adjCol].weight){
 
-      //COMPLETE CONDITION
+        board[adjRow][adjCol].weight = board[row][col].weight + 1
+
+        board[adjRow][adjCol].prevCell = board[row][col]
+      }
 
       if(adjRow == endNodeR && adjCol == endNodeC) {
         complete = true
@@ -655,13 +682,45 @@ async function dijkstra(startNodeR, startNodeC, endNodeR, endNodeC) {
     
   }
 
+  if(complete) {
+
+    await Promise.all(promises)
+    
+    backtrackCell = board[endNodeR][endNodeC].prevCell
+
+    let path = []
+
+    while(backtrackCell != board[startNodeR][startNodeC]){
+
+      path.push(backtrackCell)
+      backtrackCell = backtrackCell.prevCell
+
+      
+    }
+
+    console.log(path)
+
+    while(path.length != 0){
+
+      let current = path.pop()
+      current.type = CELL_PATH
+
+      await sleep (20)
+    }
+
+  }
+
   enableButtonControls()
+
 }
 
 drMaze = [-2, 2, 0, 0]
 dcMaze = [0, 0, 2, -2]
 
 async function primMazeGen() {
+
+  statusText = "Generating Maze: Prim's Algorithm"
+  disableButtonControls()
 
   var visited = []
 
@@ -722,7 +781,6 @@ async function primMazeGen() {
 
 
       cell.type = null
-
       await sleep(5)
 
       //TOP
@@ -770,9 +828,112 @@ async function primMazeGen() {
 
   }
   console.log(pathSet)
+
+  statusText = "Standby"
+  clickMode = null
+  enableButtonControls()
+}
+
+async function kruskalMazeGen() {
+
+  statusText = "Generating Maze: Kruskal's Algorithm"
+  disableButtonControls()
+
+  var set = new Map()
+
+  var walls = []
+
+  var setCount = 0
+
+  for (let y = 1; y < boardHeight; y += 2) {
+    
+    for (let x = 1; x < boardWidth; x += 2) {
+      
+      
+      set.set(board[y][x], setCount)
+      setCount++
+    }
+  }
+
+  await fullWall()
+  await Promise.all(promises)
+
+  console.log(set)
+
+  var wallOffset = 0
+
+  for (let y = 1; y < boardHeight; y += 1) {
+
+    if(wallOffset == 0) wallOffset = 1
+    else wallOffset = 0
+    
+    for (let x = 1; x < boardWidth; x += 2) {
+
+      if(y == (boardHeight - 1) || x == (boardWidth - 1) || x + wallOffset == (boardWidth - 1)) continue
+      
+      //board[y][x + wallOffset].type = CELL_PATH
+      walls.push(board[y][x + wallOffset])
+    }
+  }
+
+  // IF ODD VERTICAL YUNG WALLS, IF EVEN HORIZONTAL YUNG WALLS
+
+  let cell1, cell2, setCell1, setCell2
+
+  while(walls.length > 0){
+    let random = randInt(walls.length)
+
+    let selectedWall = walls[random]
+    walls.splice(random, 1)
+    
+    let row = selectedWall.row
+    let col = selectedWall.column
+
+    if(col % 2 == 1){
+      cell1 = board[row - 1][col]
+      cell2 = board[row + 1][col]
+
+    }
+    else {
+      cell1 = board[row][col - 1]
+      cell2 = board[row][col + 1]
+
+      
+    }
+
+
+    setCell1 = set.get(cell1)
+    setCell2 = set.get(cell2)
+    if(setCell1 != setCell2){
+
+      
+      set.set(cell2, setCell1)
+
+      for (const [key, value] of set.entries()) {
+        if(value == setCell2) set.set(key, setCell1)
+      }
+      
+      selectedWall.type = null
+      cell1.type = null
+      cell2.type = null
+
+      //console.log(set)
+      await sleep(50)
+    }
+
+    
+    
+  }
+
+  statusText = "Standby"
+  clickMode = null
+  enableButtonControls()
 }
 
 async function dfsMazeGen() {
+
+  statusText = "Generating Maze: Depth-First Search/ Flood Fill"
+  disableButtonControls()
 
   var visited = []
 
@@ -877,98 +1038,10 @@ async function dfsMazeGen() {
 
     
   }
-}
 
-
-async function kruskalMazeGen() {
-
-  var set = new Map()
-
-  var walls = []
-
-  var setCount = 0
-
-  for (let y = 1; y < boardHeight; y += 2) {
-    
-    for (let x = 1; x < boardWidth; x += 2) {
-      
-      
-      set.set(board[y][x], setCount)
-      setCount++
-    }
-  }
-
-  await fullWall()
-  await Promise.all(promises)
-
-  console.log(set)
-
-  var wallOffset = 0
-
-  for (let y = 1; y < boardHeight; y += 1) {
-
-    if(wallOffset == 0) wallOffset = 1
-    else wallOffset = 0
-    
-    for (let x = 1; x < boardWidth; x += 2) {
-
-      if(y == (boardHeight - 1) || x == (boardWidth - 1) || x + wallOffset == (boardWidth - 1)) continue
-      
-      //board[y][x + wallOffset].type = CELL_PATH
-      walls.push(board[y][x + wallOffset])
-    }
-  }
-
-  // IF ODD VERTICAL YUNG WALLS, IF EVEN HORIZONTAL YUNG WALLS
-
-  let cell1, cell2, setCell1, setCell2
-
-  while(walls.length > 0){
-    let random = randInt(walls.length)
-
-    let selectedWall = walls[random]
-    walls.splice(random, 1)
-    
-    let row = selectedWall.row
-    let col = selectedWall.column
-
-    if(col % 2 == 1){
-      cell1 = board[row - 1][col]
-      cell2 = board[row + 1][col]
-
-    }
-    else {
-      cell1 = board[row][col - 1]
-      cell2 = board[row][col + 1]
-
-      
-    }
-
-
-    setCell1 = set.get(cell1)
-    setCell2 = set.get(cell2)
-    if(setCell1 != setCell2){
-
-      
-      set.set(cell2, setCell1)
-
-      for (const [key, value] of set.entries()) {
-        if(value == setCell2) set.set(key, setCell1)
-      }
-      
-      selectedWall.type = null
-      cell1.type = null
-      cell2.type = null
-
-      //console.log(set)
-
-      await sleep(50)
-    }
-
-    
-    
-  }
-
+  statusText = "Standby"
+  clickMode = null
+  enableButtonControls()
 }
 
 
@@ -977,10 +1050,16 @@ async function fullWall() {
     
     for (let x = 0; x < boardWidth; x++) {
       board[y][x].type = CLICK_WALL
+      board[y][x].weight = null
     }
 
     await sleep(20)
   }
+
+  startCellR = null
+  startCellC = null
+  endCellR = null
+  endCellC = null
 }
 
 async function randomWalls() {
@@ -999,8 +1078,11 @@ async function clearRow(row) {
       
     if(board[row][x].type != null) {
       board[row][x].type = null
+      
       await sleep(1)
     }
+
+    board[row][x].weight = null
 
     
   }
@@ -1008,6 +1090,7 @@ async function clearRow(row) {
 }
 
 async function clearAll() {
+
   for (let y = 0; y < board.length; y++) {
 
     promises.push(clearRow(y))
@@ -1031,12 +1114,17 @@ async function clearRowPathfinding(row) {
       await sleep(1)
     }
 
+    board[row][x].weight = null
+
     
   }
   promises.shift()
 }
 
 async function clearPathfinding() {
+
+  statusText = "Clearing Path"
+
   for (let y = 0; y < board.length; y++) {
 
     promises.push(clearRowPathfinding(y))
@@ -1073,14 +1161,37 @@ async function clearPathfinding() {
 // FUNCTIONS FOR BUTTON CONTROLS
 
 function handleWall() {
+  if(isPathFind){
+    clearPathfinding()
+    isPathFind = false
+  }
+
+  statusText = "Create: Wall"
+
   clickMode = CLICK_WALL
 }
 
 function handleStart() {
+
+  if(isPathFind){
+    clearPathfinding()
+    isPathFind = false
+  }
+
+  statusText = "Set: Start"
+
   clickMode = CLICK_START
 }
 
 function handleEnd() {
+
+  if(isPathFind){
+    clearPathfinding()
+    isPathFind = false
+  }
+
+  statusText = "Set: End"
+
   clickMode = CLICK_END
 }
 
@@ -1089,6 +1200,14 @@ function handleDebug() {
 }
 
 function handleRemove() {
+
+  statusText = "Delete: Cell"
+
+  if(isPathFind){
+    clearPathfinding()
+    isPathFind = false
+  }
+
   clickMode = CLICK_DELETE
 }
 
@@ -1100,11 +1219,34 @@ async function handleClearBoard() {
 }
 
 function handleBFS() {
+
+  if(startCellR == null || endCellR == null){
+    alert("Please set a start and end cell")
+    return
+  }
+
+  isPathFind = true
   bfs(startCellR, startCellC, endCellR, endCellC)
 }
 
 function handleDFS() {
+  if(startCellR == null || endCellR == null){
+    alert("Please set a start and end cell")
+    return
+  }
+
+  isPathFind = true
   dfs(startCellR, startCellC, endCellR, endCellC)
+}
+
+function handleDijkstra() {
+  if(startCellR == null || endCellR == null){
+    alert("Please set a start and end cell")
+    return
+  }
+
+  isPathFind = true
+  dijkstra(startCellR, startCellC, endCellR, endCellC)
 }
 
 let boardWidth = 30+1, boardHeight = 15+2
@@ -1116,13 +1258,24 @@ let startCellC = null
 let endCellR = null
 let endCellC = null
 
-let statusText = ""
-
 let promisesResetTrigger = false
 
+let popSound
+
+let statusText = "Standby"
+
+function preload() {
+  soundFormats('mp3', 'ogg');
+  //popSound = loadSound("assets/pop_sound.mp3")
+
+  popSound = loadSound("assets/pop_sound.mp3", function () {
+    console.log('loaded', "assets/pop_sound.mp3");
+  });
+}
 
 function setup() {
   frameRate(30)
+
   //createCanvas(400, 400);
   let cnv = createCanvas(windowWidth, windowHeight - controlsHeight);
   cnv.parent("sketchHolder");
@@ -1148,21 +1301,25 @@ function setup() {
     }
   }
 
-  // board[0][0].type = CLICK_START
+  board[0][0].type = CLICK_START
 
-  // startCellR = 0
-  // startCellC = 0
+  startCellR = 0
+  startCellC = 0
 
-  // board[13][28].type = CLICK_END
+  board[10][10].type = CLICK_END
 
-  // endCellR = 15
-  // endCellC = 20
+  endCellR = 10
+  endCellC = 10
+
+  //handleDijkstra()
 
   console.log(board)
 }
 
 async function draw() {
   background(28, 42, 53);
+  textAlign(CENTER, CENTER)
+
   //background(200)
 
   // if(promisesResetTrigger){
@@ -1179,6 +1336,10 @@ async function draw() {
       
     }
   }
+  fill(255)
+  textAlign(LEFT, TOP)
+  text(statusText, 10, 10)
+
 
   // console.log(promises.length)
   // OK MEDYO MAGICAL TO FOR ME, pero gist of it is, nagrurun parin yung nasa taas, di lang tumatagos kumbaga
@@ -1189,66 +1350,74 @@ async function draw() {
 
 function mousePressed() {
 
-  for (let y = 0; y < boardHeight; y++) {
-    for (let x = 0; x < boardWidth; x++) {
-      let selectedCell = board[y][x].clicked()
+  if(mouseY > 0){
+    
 
-      if(selectedCell) {
+    for (let y = 0; y < boardHeight; y++) {
+      for (let x = 0; x < boardWidth; x++) {
+        let selectedCell = board[y][x].clicked()
+
+        // if(isPathFind && (board[y][x].type == CELL_PATH || board[y][x].type == CLICK_VISIT)){
+        //   board[y][x].type = null
+        // }
+
+        if(selectedCell) {
 
 
-        if(clickMode == CLICK_WALL){
+          if(clickMode == CLICK_WALL){
 
-          selectedCell.type = clickMode
+            selectedCell.type = clickMode
 
-        }
-        else if(clickMode == CLICK_START && isStartAnimRunning == false){
-          
-          if(startCellR != null) board[startCellR][startCellC].type = null
-
-          selectedCell.type = clickMode
-
-          startCellR = y
-          startCellC = x
-
-        }
-        else if(clickMode == CLICK_END && isEndAnimRunning == false){
-
-          if(endCellR != null) board[endCellR][endCellC].type = null
-          
-          selectedCell.type = clickMode
-
-          endCellR = y
-          endCellC = x
-
-        }
-        else if(clickMode == CLICK_DEBUG){
-            
-          selectedCell.prevCell.type = null
-          
-        }
-
-        else if(clickMode == CLICK_DEBUG){
-            
-          selectedCell.prevCell.type = null
-          
-        }
-        else if(clickMode == CLICK_DELETE){
-          
-          if(selectedCell.type == CLICK_START){
-            console.log("HERE")
-            startCellC = null
-            startCellR = null
           }
-          else if(selectedCell.type == CLICK_END){
-            endCellC = null
-            endCellR = null
+          else if(clickMode == CLICK_START && isStartAnimRunning == false){
+            
+            if(startCellR != null) board[startCellR][startCellC].type = null
+
+            selectedCell.type = clickMode
+
+            startCellR = y
+            startCellC = x
+
+          }
+          else if(clickMode == CLICK_END && isEndAnimRunning == false){
+
+            if(endCellR != null) board[endCellR][endCellC].type = null
+            
+            selectedCell.type = clickMode
+
+            endCellR = y
+            endCellC = x
+
+          }
+          else if(clickMode == CLICK_DEBUG){
+              
+            selectedCell.prevCell.type = null
+            
           }
 
-          selectedCell.type = null
-          
+          else if(clickMode == CLICK_DEBUG){
+              
+            selectedCell.prevCell.type = null
+            
+          }
+          else if(clickMode == CLICK_DELETE){
+            
+            if(selectedCell.type == CLICK_START){
+              console.log("HERE")
+              startCellC = null
+              startCellR = null
+            }
+            else if(selectedCell.type == CLICK_END){
+              endCellC = null
+              endCellR = null
+            }
+
+            selectedCell.type = null
+            
+            
+          }
           
         }
-        
       }
     }
   }

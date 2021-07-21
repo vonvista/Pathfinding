@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.2.0/p5.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.2.0/addons/p5.sound.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script>
     <script src="minheap.js"></script>
 
     <title>Pathfinding/Maze Gen</title>
@@ -27,8 +27,8 @@
         <div class="controls"> 
 
           <button onClick = handleWall() class="controlButton" style="background-color:#7e2929">Create Wall</button>
-          <button onClick = handleStart() class="controlButton" style="background-color:#7e2929">Create Start</button>
-          <button onClick = handleEnd() class="controlButton" style="background-color:#7e2929">Create End</button>
+          <button onClick = handleStart() class="controlButton" style="background-color:#7e2929">Set Start</button>
+          <button onClick = handleEnd() class="controlButton" style="background-color:#7e2929">Set End</button>
           <button onClick = handleRemove() class="controlButton" style="background-color:#7e2929">Delete Cell</button>
          
       
@@ -44,6 +44,7 @@
 
           <button onClick = handleBFS() class="controlButton" style="background-color:#7e2929">Run BFS</button>
           <button onClick = handleDFS() class="controlButton" style="background-color:#7e2929">Run DFS</button>
+          <button onClick = handleDijkstra() class="controlButton" style="background-color:#7e2929">Run Dijkstra</button>
           
           <p>Maze Gen</p>
           <button onClick = randomWalls() class="controlButton" style="background-color:#7e2929">Random Walls</button>
