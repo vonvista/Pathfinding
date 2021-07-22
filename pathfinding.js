@@ -73,11 +73,14 @@ class Cell {
     this.fillColor = [27, 170, 27]
 
     this.cancelAnim = false
+
+    this.updated = false
   }
 
   draw() { 
     
     if(this.prevType != this.type){
+      
       switch(this.type) {
         case CLICK_WALL:
           //disableButtonControls()
@@ -129,13 +132,15 @@ class Cell {
 
   clicked() {
     if(mouseX > this.x - rectSize/2 && mouseX < this.x + rectSize/2 && mouseY > this.y - rectSize/2 && mouseY < this.y + rectSize/2){
-      // this.travelledAnimation()
+      console.log("CLCIK")
       return this
     }
 
 
   }
   async travelledAnimation() {
+
+    this.updated = true
 
     if(highAnimQuality){
       this.fillColor[0] = Math.floor(Math.random() * 255);
@@ -202,9 +207,14 @@ class Cell {
     this.animRect = rectSize
     this.rectheight = rectSize
     this.rectroundness = 0
+
+    this.updated = false
   }
 
   async wallAnimation() {
+
+    this.updated = true
+
     this.animRect = 0
     this.rectheight = 0
     this.rectroundness = 0
@@ -235,6 +245,8 @@ class Cell {
     }
 
     promises.shift()
+
+    this.updated = false
     
   }
 
@@ -266,6 +278,7 @@ class Cell {
 
   async startAnimation() {
 
+    this.updated = true
     
     this.animRect = 0
     this.rectheight = 0
@@ -297,10 +310,13 @@ class Cell {
 
     isStartAnimRunning = false 
 
-    console.log("FINISHED")
+    this.updated = false
   }
 
   async endAnimation() {
+
+    this.updated = true
+
     this.animRect = 0
     this.rectheight = 0
     this.rectroundness = 0
@@ -330,11 +346,13 @@ class Cell {
     console.log("DONE")
 
     isEndAnimRunning = false
+
+    this.updated = false
   }
 
   async noneAnimation() {
     
-
+    this.updated = true
 
     if(highAnimQuality){
       for(let i = 0; i <= (20); i++){
@@ -360,7 +378,7 @@ class Cell {
       await sleep(1)
     }
 
-    
+    this.updated = false
   }
 }
 
@@ -407,7 +425,7 @@ async function bfs(startNodeR, startNodeC, endNodeR, endNodeC) {
 
   await clearPathfinding()
 
-  statusText = "Pathfinding: Breadth-First Search"
+  changeStatusText("Pathfinding: Breadth-First Search")
 
   // create a visited object
   var visited = {};
@@ -507,7 +525,7 @@ async function bfs(startNodeR, startNodeC, endNodeR, endNodeC) {
 
   }
 
-  statusText = "Standby"
+  changeStatusText("Standby")
   clickMode = null
   enableButtonControls()
 }
@@ -518,7 +536,7 @@ async function dfs(startNodeR, startNodeC, endNodeR, endNodeC) {
   
   await clearPathfinding()
 
-  statusText = "Pathfinding: Depth-First Search"
+  changeStatusText("Pathfinding: Depth-First Search")
 
 
   // create a visited object
@@ -630,7 +648,7 @@ async function dijkstra(startNodeR, startNodeC, endNodeR, endNodeC) {
 
   await clearPathfinding()
 
-  statusText = "Pathfinding: Dijkstra's Algorithm"
+  changeStatusText("Pathfinding: Dijkstra's Algorithm")
 
   // create a visited object
   var visited = {};
@@ -744,7 +762,7 @@ dcMaze = [0, 0, 2, -2]
 
 async function primMazeGen() {
 
-  statusText = "Generating Maze: Prim's Algorithm"
+  changeStatusText("Generating Maze: Prim's Algorithm")
   disableButtonControls()
 
   var visited = []
@@ -854,14 +872,14 @@ async function primMazeGen() {
   }
   console.log(pathSet)
 
-  statusText = "Standby"
+  changeStatusText("Standby")
   clickMode = null
   enableButtonControls()
 }
 
 async function kruskalMazeGen() {
 
-  statusText = "Generating Maze: Kruskal's Algorithm"
+  changeStatusText("Generating Maze: Kruskal's Algorithm")
   disableButtonControls()
 
   var set = new Map()
@@ -950,14 +968,14 @@ async function kruskalMazeGen() {
     
   }
 
-  statusText = "Standby"
+  changeStatusText("Standby")
   clickMode = null
   enableButtonControls()
 }
 
 async function dfsMazeGen() {
 
-  statusText = "Generating Maze: Depth-First Search/ Flood Fill"
+  changeStatusText("Generating Maze: Depth-First Search/ Flood Fill")
   disableButtonControls()
 
   var visited = []
@@ -1064,7 +1082,7 @@ async function dfsMazeGen() {
     
   }
 
-  statusText = "Standby"
+  changeStatusText("Standby")
   clickMode = null
   enableButtonControls()
 }
@@ -1148,7 +1166,8 @@ async function clearRowPathfinding(row) {
 
 async function clearPathfinding() {
 
-  statusText = "Clearing Path"
+  changeStatusText("Clearing Path")
+  canvasRefresh = true
 
   for (let y = 0; y < board.length; y++) {
 
@@ -1158,6 +1177,11 @@ async function clearPathfinding() {
 
   promises.shift()
 
+}
+
+function changeStatusText(text){
+  statusText = text
+  canvasRefresh = true
 }
 
 // @ARCHIVE -> clearAll function
@@ -1191,7 +1215,7 @@ function handleWall() {
     isPathFind = false
   }
 
-  statusText = "Create: Wall"
+  changeStatusText("Create: Wall")
 
   clickMode = CLICK_WALL
 }
@@ -1203,7 +1227,7 @@ function handleStart() {
     isPathFind = false
   }
 
-  statusText = "Set: Start"
+  changeStatusText("Set: Start")
 
   clickMode = CLICK_START
 }
@@ -1215,7 +1239,7 @@ function handleEnd() {
     isPathFind = false
   }
 
-  statusText = "Set: End"
+  changeStatusText("Set: End")
 
   clickMode = CLICK_END
 }
@@ -1226,7 +1250,7 @@ function handleDebug() {
 
 function handleRemove() {
 
-  statusText = "Delete: Cell"
+  changeStatusText("Delete: Cell")
 
   if(isPathFind){
     clearPathfinding()
@@ -1278,8 +1302,11 @@ let boardWidth = 30+1, boardHeight = 15+2
 
 //let boardWidth = 60+1, boardHeight = 30+2
 
-
 //let boardWidth = 15, boardHeight = 10+1
+
+
+var canvasRefresh = false
+
 let board = []
 let startCellR = null
 let startCellC = null
@@ -1342,10 +1369,27 @@ function setup() {
   //handleDijkstra()
 
   console.log(board)
+
+  // FIRST DRAW
+
+  background(28, 42, 53)
+
+  for (let y = 0; y < board.length; y++) {
+
+    for (let x = 0; x < board[y].length; x++) {
+      board[y][x].draw()
+
+    }
+  }
 }
 
 async function draw() {
-  //background(28, 42, 53);
+  if(canvasRefresh){
+    background(28, 42, 53);
+  }
+
+
+
   textAlign(CENTER, CENTER)
 
   //background(200)
@@ -1358,15 +1402,20 @@ async function draw() {
   for (let y = 0; y < board.length; y++) {
 
     for (let x = 0; x < board[y].length; x++) {
-      
-      board[y][x].draw()
 
       
+      
+      if(board[y][x].updated || canvasRefresh == true) board[y][x].draw()
+
     }
   }
   fill(255)
   textAlign(LEFT, TOP)
   text(statusText, 10, 10)
+
+  if(canvasRefresh){
+    canvasRefresh = false
+  }
 
 
   // console.log(promises.length)
@@ -1380,22 +1429,22 @@ function mousePressed() {
 
   if(mouseY > 0){
     
+    
 
     for (let y = 0; y < boardHeight; y++) {
       for (let x = 0; x < boardWidth; x++) {
         let selectedCell = board[y][x].clicked()
-
+        
         // if(isPathFind && (board[y][x].type == CELL_PATH || board[y][x].type == CLICK_VISIT)){
         //   board[y][x].type = null
         // }
 
         if(selectedCell) {
-
+          
 
           if(clickMode == CLICK_WALL){
 
             selectedCell.type = clickMode
-
           }
           else if(clickMode == CLICK_START && isStartAnimRunning == false){
             
@@ -1444,7 +1493,7 @@ function mousePressed() {
             
             
           }
-          
+          selectedCell.draw()
         }
       }
     }
