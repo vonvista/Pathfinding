@@ -113,8 +113,10 @@ class Cell {
     stroke(28, 42, 53)
     rect(this.x, this.y, rectSize, rectSize)
     //console.log(this.x)
-    fill(this.fillColor[0],this.fillColor[1],this.fillColor[2])
-    rect(this.x,this.y,Math.floor(this.animRect),Math.floor(this.animRect), Math.floor(this.rectroundness))
+    if(this.animRect > 0){
+      fill(this.fillColor[0],this.fillColor[1],this.fillColor[2])
+      rect(this.x,this.y,Math.floor(this.animRect),Math.floor(this.animRect), Math.floor(this.rectroundness))
+    }
 
     if(this.weight != null){
       noStroke()
@@ -135,43 +137,49 @@ class Cell {
   }
   async travelledAnimation() {
 
-    this.fillColor[0] = Math.floor(Math.random() * 255);
-    this.fillColor[1] = Math.floor(Math.random() * 255);
-    this.fillColor[2] = Math.floor(Math.random() * 255);
+    if(highAnimQuality){
+      this.fillColor[0] = Math.floor(Math.random() * 255);
+      this.fillColor[1] = Math.floor(Math.random() * 255);
+      this.fillColor[2] = Math.floor(Math.random() * 255);
 
-    for(let i = 0; i <= (20); i++){
-      this.animRect = this.animRect + (rectSize - this.animRect) * cellAnimEasing
-      this.rectroundness = this.rectroundness + (0 - this.rectroundness) * cellAnimEasing
-      
-      this.fillColor[0] = map(i, 0, 80, this.fillColor[0], 170, true)
-      this.fillColor[1] = map(i, 0, 80, this.fillColor[1], 27, true)
-      this.fillColor[2] = map(i, 0, 80, this.fillColor[2], 134, true)
+      for(let i = 0; i <= (20); i++){
+        this.animRect = this.animRect + (rectSize - this.animRect) * cellAnimEasing
+        this.rectroundness = this.rectroundness + (0 - this.rectroundness) * cellAnimEasing
+        
+        this.fillColor[0] = map(i, 0, 80, this.fillColor[0], 170, true)
+        this.fillColor[1] = map(i, 0, 80, this.fillColor[1], 27, true)
+        this.fillColor[2] = map(i, 0, 80, this.fillColor[2], 134, true)
 
-      if(this.cancelAnim == true){
-        this.cancelAnim = false
-        break
+        if(this.cancelAnim == true){
+          this.cancelAnim = false
+          break
+        }
+
+        //console.log(this.fillColor)
+        await new Promise(resolve => setTimeout(resolve,1));
       }
 
-      //console.log(this.fillColor)
-      await new Promise(resolve => setTimeout(resolve,1));
+      for(let i = 0; i <= (20); i++){
+        this.animRect = this.animRect + (rectSize - this.animRect) * cellAnimEasing
+        this.rectroundness = this.rectroundness + (0 - this.rectroundness) * cellAnimEasing
+        
+
+        this.fillColor[0] = map(i, 0, 80, this.fillColor[0], 27, true)
+        this.fillColor[1] = map(i, 0, 80, this.fillColor[1], 101, true)
+        this.fillColor[2] = map(i, 0, 80, this.fillColor[2], 171, true)
+
+        if(this.cancelAnim == true){
+          this.cancelAnim = false
+          break
+        }
+
+        //console.log(this.fillColor)
+        await new Promise(resolve => setTimeout(resolve,1));
+      }
     }
-
-    for(let i = 0; i <= (20); i++){
-      this.animRect = this.animRect + (rectSize - this.animRect) * cellAnimEasing
-      this.rectroundness = this.rectroundness + (0 - this.rectroundness) * cellAnimEasing
-      
-
-      this.fillColor[0] = map(i, 0, 80, this.fillColor[0], 27, true)
-      this.fillColor[1] = map(i, 0, 80, this.fillColor[1], 101, true)
-      this.fillColor[2] = map(i, 0, 80, this.fillColor[2], 171, true)
-
-      if(this.cancelAnim == true){
-        this.cancelAnim = false
-        break
-      }
-
-      //console.log(this.fillColor)
-      await new Promise(resolve => setTimeout(resolve,1));
+    else {
+      this.fillColor = [27, 101, 171]
+        
     }
 
     // for(let i = 0; i <= (150); i++){
@@ -257,6 +265,8 @@ class Cell {
   }
 
   async startAnimation() {
+
+    
     this.animRect = 0
     this.rectheight = 0
     this.rectroundness = 0
@@ -265,17 +275,25 @@ class Cell {
 
     isStartAnimRunning = true 
 
-    for(let i = 0; i <= (40); i++){
-      this.animRect = this.animRect + (rectSize - this.animRect) * cellAnimEasing
-      this.rectroundness = this.rectroundness + (0 - this.rectroundness) * cellAnimEasing
+    if(highAnimQuality){
 
-      //console.log(this.fillColor)
-      await new Promise(resolve => setTimeout(resolve,1));
+      for(let i = 0; i <= (40); i++){
+        this.animRect = this.animRect + (rectSize - this.animRect) * cellAnimEasing
+        this.rectroundness = this.rectroundness + (0 - this.rectroundness) * cellAnimEasing
+
+        //console.log(this.fillColor)
+        await new Promise(resolve => setTimeout(resolve,1));
+      }
+
+      this.animRect = rectSize
+      this.rectheight = rectSize
+      this.rectroundness = 0
     }
-
-    this.animRect = rectSize
-    this.rectheight = rectSize
-    this.rectroundness = 0
+    else {
+      this.animRect = rectSize
+      this.rectheight = rectSize
+      this.rectroundness = 0
+    }
 
     isStartAnimRunning = false 
 
@@ -291,16 +309,23 @@ class Cell {
 
     isEndAnimRunning = true 
 
-    for(let i = 0; i <= (40); i++){
-      this.animRect = this.animRect + (rectSize - this.animRect) * cellAnimEasing
+    if(highAnimQuality){
+      for(let i = 0; i <= (40); i++){
+        this.animRect = this.animRect + (rectSize - this.animRect) * cellAnimEasing
 
-      //console.log(this.fillColor)
-      await new Promise(resolve => setTimeout(resolve,1));
+        //console.log(this.fillColor)
+        await new Promise(resolve => setTimeout(resolve,1));
+      }
+
+      this.animRect = rectSize
+      this.rectheight = rectSize
+      this.rectroundness = 0
     }
-
-    this.animRect = rectSize
-    this.rectheight = rectSize
-    this.rectroundness = 0
+    else {
+      this.animRect = rectSize
+      this.rectheight = rectSize
+      this.rectroundness = 0
+    }
 
     console.log("DONE")
 
@@ -1251,6 +1276,9 @@ function handleDijkstra() {
 
 let boardWidth = 30+1, boardHeight = 15+2
 
+//let boardWidth = 60+1, boardHeight = 30+2
+
+
 //let boardWidth = 15, boardHeight = 10+1
 let board = []
 let startCellR = null
@@ -1317,7 +1345,7 @@ function setup() {
 }
 
 async function draw() {
-  background(28, 42, 53);
+  //background(28, 42, 53);
   textAlign(CENTER, CENTER)
 
   //background(200)
