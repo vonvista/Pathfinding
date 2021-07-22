@@ -64,6 +64,9 @@ class Cell {
 
     this.prevCell = null
 
+    this.updated = true
+    this.updateBuffer = false
+
     // Detect if there's a change in cell type, acts like a flip flop
     this.prevType = null
 
@@ -78,6 +81,8 @@ class Cell {
   draw() { 
     
     if(this.prevType != this.type){
+
+      this.updated = true
       
       switch(this.type) {
         case CLICK_WALL:
@@ -103,24 +108,30 @@ class Cell {
       
     }
 
-    if(mouseX > this.x - rectSize/2 && mouseX < this.x + rectSize/2 && 
-      mouseY > this.y - rectSize/2 && mouseY < this.y + rectSize/2){
-        
-      fill(255, 196, 0)
-    }
-    else {
-      fill(255,255,255)
-    }
+    fill(255,255,255)
     stroke(28, 42, 53)
-    rect(this.x, this.y, rectSize, rectSize)
-    //console.log(this.x)
-    fill(this.fillColor[0],this.fillColor[1],this.fillColor[2])
-    rect(this.x,this.y,Math.floor(this.animRect),Math.floor(this.animRect), Math.floor(this.rectroundness))
+
+    if(this.updated || canvasRefresh){
+      
+      rect(this.x, this.y, rectSize, rectSize)
+      
+    }
+
+    if(this.animRect > 0 || canvasRefresh){
+      fill(this.fillColor[0],this.fillColor[1],this.fillColor[2])
+      rect(this.x,this.y,Math.floor(this.animRect),Math.floor(this.animRect), Math.floor(this.rectroundness))
+    }
+    
 
     if(this.weight != null){
       noStroke()
       fill(170,170,170)
       text(this.weight.toString(), this.x, this.y)
+    }
+
+    if(this.updateBuffer){
+      this.updateBuffer = false
+      this.updated = false
     }
 
     this.prevType = this.type
@@ -196,6 +207,8 @@ class Cell {
     this.rectheight = rectSize
     this.rectroundness = 0
 
+    this.updateBuffer = true
+
   }
 
   async wallAnimation() {
@@ -230,6 +243,8 @@ class Cell {
     }
 
     promises.shift()
+
+    this.updateBuffer = true
     
   }
 
@@ -256,6 +271,8 @@ class Cell {
     this.rectroundness = 0
 
     promises.shift()
+
+    this.updateBuffer = true
     
   }
 
@@ -281,6 +298,8 @@ class Cell {
     this.rectroundness = 0
 
     isStartAnimRunning = false 
+
+    this.updateBuffer = true
 
   }
 
@@ -309,9 +328,13 @@ class Cell {
 
     isEndAnimRunning = false
 
+    this.updateBuffer = true
+
   }
 
   async noneAnimation() {
+
+    this.updated = true
 
     if(highAnimQuality){
       for(let i = 0; i <= (20); i++){
@@ -336,6 +359,8 @@ class Cell {
 
       await sleep(1)
     }
+
+    this.updateBuffer = true
   }
 }
 
@@ -740,7 +765,6 @@ async function primMazeGen() {
   await Promise.all(promises)
 
   while(pathSet.length != 0){
-    console.log(pathSet)
     var randCell = randInt(pathSet.length)
 
     var cell = pathSet[randCell]
@@ -857,7 +881,7 @@ async function kruskalMazeGen() {
   await fullWall()
   await Promise.all(promises)
 
-  console.log(set)
+  
 
   var wallOffset = 0
 
@@ -986,7 +1010,6 @@ async function dfsMazeGen() {
 
       // board[adjRow][adjCol].type = CLICK_WALL
     }
-    console.log(visitedNeighbors)
 
     if(visitedNeighbors.length != 0){
 
@@ -1029,7 +1052,7 @@ async function dfsMazeGen() {
 
       connectCell.type = null
 
-      await sleep(50)
+      await sleep(20)
 
       cell = connectCell
 
@@ -1050,9 +1073,11 @@ async function fullWall() {
     for (let x = 0; x < boardWidth; x++) {
       board[y][x].type = CLICK_WALL
       board[y][x].weight = null
+
+      await sleep(10)
     }
 
-    await sleep(20)
+    
   }
 
   startCellR = null
@@ -1136,6 +1161,7 @@ async function clearPathfinding() {
 
 function changeStatusText(text){
   statusText = text
+  canvasRefresh = true
 }
 
 // @ARCHIVE -> clearAll function
@@ -1253,6 +1279,7 @@ function handleDijkstra() {
 }
 
 let boardWidth = 30+1, boardHeight = 15+2
+//let boardWidth = 60+1, boardHeight = 30+1
 
 //let boardWidth = 15, boardHeight = 10+1
 
@@ -1268,6 +1295,8 @@ let promisesResetTrigger = false
 let popSound
 
 let statusText = "Standby"
+
+let canvasRefresh = false
 
 function preload() {
   soundFormats('mp3', 'ogg');
@@ -1328,13 +1357,15 @@ function setup() {
 
     for (let x = 0; x < board[y].length; x++) {
       board[y][x].draw()
-
+      board[y][x].updated = false
     }
   }
 }
 
 async function draw() {
-  background(28, 42, 53);
+  if(canvasRefresh){
+    background(28, 42, 53);
+  }
   textAlign(CENTER, CENTER)
 
   //background(200)
@@ -1356,6 +1387,8 @@ async function draw() {
   textAlign(LEFT, TOP)
   text(statusText, 10, 10)
 
+  if(canvasRefresh) canvasRefresh = false
+
   // console.log(promises.length)
   // OK MEDYO MAGICAL TO FOR ME, pero gist of it is, nagrurun parin yung nasa taas, di lang tumatagos kumbaga
   await Promise.all(promises)
@@ -1371,6 +1404,7 @@ function mousePressed() {
 
     for (let y = 0; y < boardHeight; y++) {
       for (let x = 0; x < boardWidth; x++) {
+
         let selectedCell = board[y][x].clicked()
         
         // if(isPathFind && (board[y][x].type == CELL_PATH || board[y][x].type == CLICK_VISIT)){
@@ -1378,7 +1412,7 @@ function mousePressed() {
         // }
 
         if(selectedCell) {
-          
+          console.log(selectedCell.updated)
 
           if(clickMode == CLICK_WALL){
 
