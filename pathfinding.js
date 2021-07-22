@@ -1068,17 +1068,22 @@ async function dfsMazeGen() {
 
 
 async function fullWall() {
+
+  highAnimQuality = false
+
   for (let y = 0; y < boardHeight; y++) {
     
     for (let x = 0; x < boardWidth; x++) {
       board[y][x].type = CLICK_WALL
       board[y][x].weight = null
 
-      await sleep(10)
+      
     }
 
-    
+    await sleep(10)
   }
+
+  highAnimQuality = true
 
   startCellR = null
   startCellC = null
