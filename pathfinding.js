@@ -73,8 +73,6 @@ class Cell {
     this.fillColor = [27, 170, 27]
 
     this.cancelAnim = false
-
-    this.updated = false
   }
 
   draw() { 
@@ -198,12 +196,9 @@ class Cell {
     this.rectheight = rectSize
     this.rectroundness = 0
 
-    this.updated = false
   }
 
   async wallAnimation() {
-
-    this.updated = true
 
     this.animRect = 0
     this.rectheight = 0
@@ -235,8 +230,6 @@ class Cell {
     }
 
     promises.shift()
-
-    this.updated = false
     
   }
 
@@ -289,12 +282,9 @@ class Cell {
 
     isStartAnimRunning = false 
 
-    this.updated = false
   }
 
   async endAnimation() {
-
-    this.updated = true
 
     this.animRect = 0
     this.rectheight = 0
@@ -319,12 +309,9 @@ class Cell {
 
     isEndAnimRunning = false
 
-    this.updated = false
   }
 
   async noneAnimation() {
-    
-    this.updated = true
 
     if(highAnimQuality){
       for(let i = 0; i <= (20); i++){
@@ -349,8 +336,6 @@ class Cell {
 
       await sleep(1)
     }
-
-    this.updated = false
   }
 }
 
@@ -785,7 +770,6 @@ async function primMazeGen() {
 
       // board[adjRow][adjCol].type = CLICK_WALL
     }
-    console.log(visitedNeighbors)
 
     if(visitedNeighbors.length != 0){
 
@@ -1139,7 +1123,6 @@ async function clearRowPathfinding(row) {
 async function clearPathfinding() {
 
   changeStatusText("Clearing Path")
-  canvasRefresh = true
 
   for (let y = 0; y < board.length; y++) {
 
@@ -1153,7 +1136,6 @@ async function clearPathfinding() {
 
 function changeStatusText(text){
   statusText = text
-  canvasRefresh = true
 }
 
 // @ARCHIVE -> clearAll function
@@ -1275,8 +1257,6 @@ let boardWidth = 30+1, boardHeight = 15+2
 //let boardWidth = 15, boardHeight = 10+1
 
 
-var canvasRefresh = false
-
 let board = []
 let startCellR = null
 let startCellC = null
@@ -1368,20 +1348,13 @@ async function draw() {
 
     for (let x = 0; x < board[y].length; x++) {
 
-      
-      
-      if(board[y][x].updated || canvasRefresh == true) board[y][x].draw()
+      board[y][x].draw()
 
     }
   }
   fill(255)
   textAlign(LEFT, TOP)
   text(statusText, 10, 10)
-
-  if(canvasRefresh){
-    canvasRefresh = false
-  }
-
 
   // console.log(promises.length)
   // OK MEDYO MAGICAL TO FOR ME, pero gist of it is, nagrurun parin yung nasa taas, di lang tumatagos kumbaga
