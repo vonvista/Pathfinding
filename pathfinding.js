@@ -75,7 +75,11 @@ class Cell {
     this.rectroundness = 50
     this.fillColor = [27, 170, 27]
 
-    this.cancelAnim = false
+    // For A*
+
+    this.astarG = 0
+    this.astarH = 0
+    this.astarF = 0
   }
 
   draw() { 
@@ -739,6 +743,166 @@ async function dijkstra(startNodeR, startNodeC, endNodeR, endNodeC) {
 
 }
 
+async function astar(startNodeR, startNodeC, endNodeR, endNodeC) {
+
+  openList = []
+  closedList = []
+
+  endNode = board[endNodeR][endNodeC]
+
+  openList.push(board[startNodeR][startNodeC])
+
+  let complete
+
+  //for(let i = 0; i < boardHeight * boardWidth; i++){
+  //while(openList.length > 0){
+
+  for(let i = 0; i < boardHeight * boardWidth; i++){
+    
+    let currentNode = openList[0]
+    let currentIndex = 0
+    
+   
+
+    //console.log(openList)
+
+    for(const [index, item] of openList.entries()) {
+      if(item.astarF <= currentNode.astarF){
+        currentNode = item
+        currentIndex = index
+      }
+    }
+
+    if(currentNode != board[startNodeR][startNodeC]) currentNode.type = CLICK_VISIT
+
+    let row = currentNode.row
+    let col = currentNode.column
+
+    openList.splice(currentIndex, 1)
+    closedList.push(currentNode)
+    //console.log(closedList)
+
+    
+
+    let children = []
+
+    for (let i = 0; i < 4; i++) {
+
+      var adjRow = row + dr[i];
+      var adjCol = col + dc[i];
+
+      if (adjRow < 0 || adjCol < 0 || adjRow >= boardHeight || adjCol >= boardWidth) continue
+
+      if (board[adjRow][adjCol].type == CLICK_WALL) continue
+
+      children.push(board[adjRow][adjCol])
+
+    }
+
+    
+
+    for(let child of children){
+
+      //COMPLETE CONDITION
+      if(child == endNode){
+        complete = true
+        endNode.prevCell = currentNode
+        break
+      }
+
+      
+      let skip = false
+
+      for(closedChild of closedList){
+        if(child == closedChild) {
+          skip = true
+          break
+        }
+      }
+
+      if(skip) continue
+
+      skip = false
+
+      // let openListStrings = ""
+
+      // for(openNode of openList){
+      //   openListStrings += openNode.row + "," + openNode.column + " | "
+
+      // }
+
+      // console.log(openListStrings)
+
+      for(openNode of openList){
+        if(child == openNode) {
+
+          if(child.astarG < currentNode.astarG + 1){
+            console.log("HERE")
+            child.astarG = currentNode.astarG + 1
+            child.astarH = Math.abs(currentNode.row - endNode.row) + Math.abs(currentNode.column - endNode.column)
+            //child.astarH = Math.pow(currentNode.row - endNode.row,2) + Math.pow(currentNode.column - endNode.column,2)
+            child.astarF = child.astarG + child.astarH
+
+            child.prevCell = currentNode
+          }
+
+          skip = true
+          break
+        }
+      }
+
+      if(skip) continue
+      
+      child.prevCell = currentNode
+
+      child.astarG = currentNode.astarG + 1
+      child.astarH = Math.abs(currentNode.row - endNode.row) + Math.abs(currentNode.column - endNode.column)
+      //child.astarH = Math.pow(currentNode.row - endNode.row,2) + Math.pow(currentNode.column - endNode.column,2)
+      child.astarF = child.astarG + child.astarH
+
+      child.weight = child.astarF
+
+      child.type = CLICK_VISIT
+      openList.push(child)
+
+      await sleep(20)
+
+    }
+
+    if(complete) break
+
+    
+
+  }
+
+  if(complete){
+    await Promise.all(promises)
+      
+    backtrackCell = board[endNodeR][endNodeC].prevCell
+
+    let path = []
+
+    while(backtrackCell != board[startNodeR][startNodeC]){
+      console.log(backtrackCell)
+      path.push(backtrackCell)
+      backtrackCell = backtrackCell.prevCell
+
+      
+    }
+
+    console.log(path)
+
+    while(path.length != 0){
+
+      let current = path.pop()
+      current.type = CELL_PATH
+
+      await sleep (20)
+    }
+  }
+}
+
+
 drMaze = [-2, 2, 0, 0]
 dcMaze = [0, 0, 2, -2]
 
@@ -1066,7 +1230,6 @@ async function dfsMazeGen() {
   enableButtonControls()
 }
 
-
 async function fullWall() {
 
   highAnimQuality = false
@@ -1283,6 +1446,16 @@ function handleDijkstra() {
   dijkstra(startCellR, startCellC, endCellR, endCellC)
 }
 
+function handleAstar() {
+  if(startCellR == null || endCellR == null){
+    alert("Please set a start and end cell")
+    return
+  }
+
+  isPathFind = true
+  astar(startCellR, startCellC, endCellR, endCellC)
+}
+
 let boardWidth = 30+1, boardHeight = 15+2
 //let boardWidth = 60+1, boardHeight = 30+1
 
@@ -1340,15 +1513,26 @@ function setup() {
     }
   }
 
-  board[0][0].type = CLICK_START
+  board[7][3].type = CLICK_START
 
-  startCellR = 0
-  startCellC = 0
+  startCellR = 7
+  startCellC = 3
 
-  board[10][10].type = CLICK_END
+  board[7][25].type = CLICK_END
 
-  endCellR = 10
-  endCellC = 10
+  endCellR = 7
+  endCellC = 25
+
+  board[7][13].type = CLICK_WALL
+  board[8][13].type = CLICK_WALL
+  board[9][13].type = CLICK_WALL
+  board[10][13].type = CLICK_WALL
+  board[6][13].type = CLICK_WALL
+  board[5][13].type = CLICK_WALL
+  board[4][13].type = CLICK_WALL
+
+  handleAstar()
+
 
   //handleDijkstra()
 
