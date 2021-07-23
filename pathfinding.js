@@ -133,6 +133,8 @@ class Cell {
       text(this.weight.toString(), this.x, this.y)
     }
 
+    
+
     if(this.updateBuffer){
       this.updateBuffer = false
       this.updated = false
@@ -143,7 +145,6 @@ class Cell {
 
   clicked() {
     if(mouseX > this.x - rectSize/2 && mouseX < this.x + rectSize/2 && mouseY > this.y - rectSize/2 && mouseY < this.y + rectSize/2){
-      console.log("CLCIK")
       return this
     }
 
@@ -410,6 +411,10 @@ async function bfs(startNodeR, startNodeC, endNodeR, endNodeC) {
   disableButtonControls()
 
   await clearPathfinding()
+  await Promise.all(promises)
+  canvasRefresh = true
+
+  canvasRefresh = true
 
   changeStatusText("Pathfinding: Breadth-First Search")
 
@@ -521,6 +526,8 @@ async function dfs(startNodeR, startNodeC, endNodeR, endNodeC) {
   disableButtonControls()
   
   await clearPathfinding()
+  await Promise.all(promises)
+  canvasRefresh = true
 
   changeStatusText("Pathfinding: Depth-First Search")
 
@@ -633,6 +640,8 @@ async function dijkstra(startNodeR, startNodeC, endNodeR, endNodeC) {
   disableButtonControls()
 
   await clearPathfinding()
+  await Promise.all(promises)
+  canvasRefresh = true
 
   changeStatusText("Pathfinding: Dijkstra's Algorithm")
 
@@ -744,6 +753,11 @@ async function dijkstra(startNodeR, startNodeC, endNodeR, endNodeC) {
 }
 
 async function astar(startNodeR, startNodeC, endNodeR, endNodeC) {
+
+  await clearPathfinding()
+  await Promise.all(promises)
+  canvasRefresh = true
+
 
   openList = []
   closedList = []
@@ -862,7 +876,7 @@ async function astar(startNodeR, startNodeC, endNodeR, endNodeC) {
 
       child.weight = child.astarF
 
-      child.type = CLICK_VISIT
+      //child.type = CLICK_VISIT
       openList.push(child)
 
       await sleep(20)
@@ -1232,6 +1246,8 @@ async function dfsMazeGen() {
 
 async function fullWall() {
 
+  await Promise.all(promises)
+
   highAnimQuality = false
 
   for (let y = 0; y < boardHeight; y++) {
@@ -1267,14 +1283,30 @@ async function randomWalls() {
 
 async function clearRow(row) {
   for (let x = 0; x < board[row].length; x++) {
+
+    
       
     if(board[row][x].type != null) {
+
       board[row][x].type = null
+
+      if(board[row][x].weight != null) board[row][x].weight = null
       
       await sleep(1)
     }
+    else {
+      if(board[row][x].weight != null){
+        board[row][x].weight = null
+        board[row][x].updated = true
+        board[row][x].updateBuffer = true
+      }
+    }
 
-    board[row][x].weight = null
+    // canvasRefresh = true
+
+    
+
+
 
     
   }
@@ -1296,6 +1328,9 @@ async function clearAll() {
   endCellR = null
   endCellC = null
 
+  await Promise.all(promises)
+  canvasRefresh = true
+
 }
 
 async function clearRowPathfinding(row) {
@@ -1303,10 +1338,20 @@ async function clearRowPathfinding(row) {
       
     if(board[row][x].type == CLICK_VISIT || board[row][x].type == CELL_PATH) {
       board[row][x].type = null
+      board[row][x].weight = null
       await sleep(1)
     }
+    else{
+      if(board[row][x].weight != null){
+        board[row][x].weight = null
+        board[row][x].updated = true
+        board[row][x].updateBuffer = true
+      }
+    }
+    
+    
+    
 
-    board[row][x].weight = null
 
     
   }
@@ -1531,7 +1576,7 @@ function setup() {
   board[5][13].type = CLICK_WALL
   board[4][13].type = CLICK_WALL
 
-  handleAstar()
+  //handleAstar()
 
 
   //handleDijkstra()
@@ -1700,7 +1745,51 @@ function mouseDragged() {
 function windowResized() {
   var controlsHeight = document.getElementById("controlMain").offsetHeight 
   resizeCanvas(windowWidth, windowHeight - controlsHeight);
+  canvasRefresh = true
   pixelDensity(displayDensity());
 }
 
+
+function adjustBoard() {
+  let newBoardWidth = parseInt(document.getElementById("boardWidth").value)
+  let newBoardHeight = parseInt(document.getElementById("boardHeight").value)
+  let newRectSize = parseInt(document.getElementById("rectSize").value)
+
+  
+  if(newBoardHeight == boardHeight && newBoardWidth == boardWidth && newRectSize == rectSize) {
+    for (let y = 0; y < boardHeight; y++) {
+      for (let x = 0; x < boardWidth; x++) {
+
+
+        board[y][x].x = width/2 - (rectSize * (boardWidth - 1))/2 + rectSize * x
+        board[y][x].y = height/2 - (rectSize * (boardHeight - 1))/2 + rectSize * y
+        
+      }
+    }
+  }
+  else {
+
+    boardWidth = newBoardWidth
+    boardHeight = newBoardHeight
+    rectSize = newRectSize
+
+    board = []
+
+    
+
+    for (let y = 0; y < boardHeight; y++) {
+      board[y] = []
+      for (let x = 0; x < boardWidth; x++) {
+
+        var cell = new Cell(width/2 - (rectSize * (boardWidth - 1))/2 + rectSize * x, 
+        height/2 - (rectSize * (boardHeight - 1))/2 + rectSize * y,
+        y, 
+        x)
+        
+        board[y].push(cell)
+      }
+    }
+  }
+  canvasRefresh = true
+}
 

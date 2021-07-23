@@ -30,6 +30,19 @@
           <button onClick = handleStart() class="controlButton" style="background-color:#7e2929">Set Start</button>
           <button onClick = handleEnd() class="controlButton" style="background-color:#7e2929">Set End</button>
           <button onClick = handleRemove() class="controlButton" style="background-color:#7e2929">Delete Cell</button>
+
+          <p>Adjust</p>
+
+          <input type="number" id="boardWidth" placeholder="W"
+          class="num_field" min="10" max="60" value="31" step="1" style="background-color:#67297e" onKeyDown="return false"></input>
+          
+          <input type="number" id="boardHeight" placeholder="W"
+          class="num_field" min="10" max="30" value="17" step="1" style="background-color:#67297e" onKeyDown="return false"></input>
+          
+          <input type="number" id="rectSize" placeholder="W"
+          class="num_field" min="15" max="45" value="30" step="1" style="background-color:#67297e" onKeyDown="return false"></input>
+
+          <button onClick = adjustBoard() class="controlButton" style="background-color:#7e2929">Adjust Board</button>
          
       
           <p class="controlsTitle" style="margin-left:10px;">Animation Speed</p>
