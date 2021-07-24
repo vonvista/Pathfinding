@@ -1591,8 +1591,8 @@ function handleBidirDFS() {
     return
   }
 
-  isPathFind = true
-  bidirDFS(startCellR, startCellC, endCellR, endCellC)
+  //isPathFind = true
+  //bidirDFS(startCellR, startCellC, endCellR, endCellC)
 }
 
 let boardWidth = 30+1, boardHeight = 15+2
