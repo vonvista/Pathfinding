@@ -60,6 +60,8 @@ class Cell {
 
     this.type = null
 
+
+    // Text display
     this.weight = null
 
     this.prevCell = null
@@ -76,10 +78,10 @@ class Cell {
     this.fillColor = [27, 170, 27]
 
     // For A*
-
     this.astarG = 0
     this.astarH = 0
     this.astarF = 0
+
   }
 
   draw() { 
@@ -191,21 +193,6 @@ class Cell {
       await new Promise(resolve => setTimeout(resolve,1));
     }
 
-    // for(let i = 0; i <= (150); i++){
-    //   // this.animRect = this.animRect + (rectSize - this.animRect) * cellAnimEasing
-    //   // this.rectroundness = this.rectroundness + (0 - this.rectroundness) * cellAnimEasing
-
-    //   this.animRect = map(i, 0, 150, 0, rectSize, true)
-    //   this.rectroundness = map(i, 0, 150, 50, 0, true)
-      
-
-    //   this.fillColor[0] = map(i, 0, 150, this.fillColor[0], 27, true)
-    //   this.fillColor[1] = map(i, 0, 150, this.fillColor[1], 101, true)
-    //   this.fillColor[2] = map(i, 0, 150, this.fillColor[2], 171, true)
-
-    //   //console.log(this.fillColor)
-    //   await sleep(1)
-    // }
     promises.shift()
 
     this.animRect = rectSize
@@ -490,29 +477,7 @@ async function bfs(startNodeR, startNodeC, endNodeR, endNodeC) {
 
   if(complete) {
 
-    await Promise.all(promises)
-    
-    backtrackCell = board[endNodeR][endNodeC].prevCell
-
-    let path = []
-
-    while(backtrackCell != board[startNodeR][startNodeC]){
-
-      path.push(backtrackCell)
-      backtrackCell = backtrackCell.prevCell
-
-      
-    }
-
-    console.log(path)
-
-    while(path.length != 0){
-
-      let current = path.pop()
-      current.type = CELL_PATH
-
-      await sleep (20)
-    }
+    await tracePath(startNodeR, startNodeC, endNodeR, endNodeC)
 
   }
 
@@ -603,31 +568,7 @@ async function dfs(startNodeR, startNodeC, endNodeR, endNodeC) {
   }
 
   if(complete) {
-
-    await Promise.all(promises)
-    
-    backtrackCell = board[endNodeR][endNodeC].prevCell
-
-    let path = []
-
-    while(backtrackCell != board[startNodeR][startNodeC]){
-
-      path.push(backtrackCell)
-      backtrackCell = backtrackCell.prevCell
-
-      
-    }
-
-    console.log(path)
-
-    while(path.length != 0){
-
-      let current = path.pop()
-      current.type = CELL_PATH
-
-      await sleep (20)
-    }
-
+    await tracePath(startNodeR, startNodeC, endNodeR, endNodeC)
   }
 
   enableButtonControls()
@@ -722,28 +663,8 @@ async function dijkstra(startNodeR, startNodeC, endNodeR, endNodeC) {
 
   if(complete) {
 
-    await Promise.all(promises)
-    
-    backtrackCell = board[endNodeR][endNodeC].prevCell
-
-    let path = []
-
-    while(backtrackCell != board[startNodeR][startNodeC]){
-
-      path.push(backtrackCell)
-      backtrackCell = backtrackCell.prevCell
-
-      
-    }
-
-    console.log(path)
-
-    while(path.length != 0){
-
-      let current = path.pop()
-      current.type = CELL_PATH
-
-      await sleep (20)
+    if(complete){
+      await tracePath(startNodeR, startNodeC, endNodeR, endNodeC)
     }
 
   }
@@ -890,29 +811,192 @@ async function astar(startNodeR, startNodeC, endNodeR, endNodeC) {
   }
 
   if(complete){
-    await Promise.all(promises)
-      
-    backtrackCell = board[endNodeR][endNodeC].prevCell
+    await tracePath(startNodeR, startNodeC, endNodeR, endNodeC)
+  }
+}
 
-    let path = []
+async function bidirDFS(startNodeR, startNodeC, endNodeR, endNodeC) {
 
-    while(backtrackCell != board[startNodeR][startNodeC]){
-      console.log(backtrackCell)
-      path.push(backtrackCell)
-      backtrackCell = backtrackCell.prevCell
+  disableButtonControls()
 
-      
-    }
+  await clearPathfinding()
+  await Promise.all(promises)
+  canvasRefresh = true
 
-    console.log(path)
+  canvasRefresh = true
 
-    while(path.length != 0){
+  changeStatusText("Pathfinding: Breadth-First Search")
 
-      let current = path.pop()
-      current.type = CELL_PATH
+  // create a visited object
+  var sourceV = {};
+  var destV = {}
+
+  // Create an object for queue
+  var sourceQ = []
+  var destQ = []
+
+  var complete = false
+
+  // add the starting node to the queue
+  
+  sourceQ.push([startNodeR, startNodeC])
+  destQ.push([endNodeR, endNodeC])
+
+  var skip = false
+
+  // loop until queue is element
+  while (sourceQ.length != 0) {
+    // get the element from the queue
+
+    skip = false
+   
+    var curr = sourceQ.shift();
+    var row = curr[0]
+    var col = curr[1]
+
+    if ((row < 0 || col < 0 || row >= boardHeight || col >= boardWidth) ||
+      (sourceV[row + "," + col]) || 
+      (board[row][col].type == CLICK_WALL)) skip = true
+
+    if(skip == false){
+
+      skip = false
+
+      sourceV[row + "," + col] = true
 
       await sleep (20)
+
+      if(row != startNodeR || col != startNodeC) board[row][col].type = CLICK_VISIT
+    
+      // FOR SOURCE
+      for (let i = 0; i < 4; i++) {
+
+        var adjRow = row + dr[i];
+        var adjCol = col + dc[i];
+        sourceQ.push([ adjRow, adjCol ]);
+
+
+        if (adjRow < 0 || adjCol < 0 || adjRow >= boardHeight || adjCol >= boardWidth) continue
+        
+        if(sourceV[adjRow + "," + adjCol] != null && destV[adjRow + "," + adjCol] != null) {
+          complete = true
+          board[adjRow][adjCol].prevCell = board[row][col]
+          console.log("COMPLETE")
+          break
+        }
+
+        if (sourceV[adjRow + "," + adjCol]) continue
+        if (board[adjRow][adjCol].type == CLICK_WALL) continue
+
+        if(skip == false){
+
+          board[adjRow][adjCol].prevCell = board[row][col]
+
+          //COMPLETE CONDITION
+
+          if(sourceV[adjRow + "," + adjCol] != null && destV[adjRow + "," + adjCol] != null) {
+            console.log("COMPLETE")
+            complete = true
+            break
+          }
+
+        }
+
+      }
+      
+      skip = false
     }
+
+    if(complete) break
+
+    curr = destQ.shift();
+    row = curr[0]
+    col = curr[1]
+
+    if (row < 0 || col < 0 || row >= boardHeight || col >= boardWidth) continue
+
+    if (destV[row + "," + col]) continue
+
+    if (board[row][col].type == CLICK_WALL) continue
+
+    
+
+    destV[row + "," + col] = true
+
+    await sleep (20)
+
+    if(row != endNodeR || col != endNodeC) board[row][col].type = CLICK_VISIT
+   
+    // FOR DESTINATION
+    for (let i = 0; i < 4; i++) {
+
+      var adjRow = row + dr[i];
+      var adjCol = col + dc[i];
+      destQ.push([ adjRow, adjCol ]);
+
+      if (adjRow < 0 || adjCol < 0 || adjRow >= boardHeight || adjCol >= boardWidth) continue
+
+      if(sourceV[adjRow + "," + adjCol] != null && destV[adjRow + "," + adjCol] != null) {
+        complete = true
+
+        board[row][col].prevCell = board[adjRow][adjCol]
+
+        console.log("COMPLETE")
+        break
+      }
+      
+      if (destV[adjRow + "," + adjCol]) continue
+
+      if (board[adjRow][adjCol].type == CLICK_WALL) continue
+
+      board[row][col].prevCell = board[adjRow][adjCol]
+
+      //COMPLETE CONDITION
+
+      
+
+    }
+    
+    if(complete) break
+    
+  }
+
+  console.log("LABAS")
+
+  if(complete) {
+
+    await tracePath(startNodeR, startNodeC, endNodeR, endNodeC)
+
+  }
+
+  changeStatusText("Standby")
+  clickMode = null
+  enableButtonControls()
+}
+
+async function tracePath(startNodeR, startNodeC, endNodeR, endNodeC){
+  await Promise.all(promises)
+      
+  backtrackCell = board[endNodeR][endNodeC].prevCell
+
+  let path = []
+
+  while(backtrackCell != board[startNodeR][startNodeC]){
+    console.log(backtrackCell)
+    path.push(backtrackCell)
+    backtrackCell = backtrackCell.prevCell
+
+    
+  }
+
+  console.log(path)
+
+  while(path.length != 0){
+
+    let current = path.pop()
+    current.type = CELL_PATH
+
+    await sleep (20)
   }
 }
 
@@ -1499,6 +1583,16 @@ function handleAstar() {
 
   isPathFind = true
   astar(startCellR, startCellC, endCellR, endCellC)
+}
+
+function handleBidirDFS() {
+  if(startCellR == null || endCellR == null){
+    alert("Please set a start and end cell")
+    return
+  }
+
+  isPathFind = true
+  bidirDFS(startCellR, startCellC, endCellR, endCellC)
 }
 
 let boardWidth = 30+1, boardHeight = 15+2
