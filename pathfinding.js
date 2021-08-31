@@ -844,6 +844,8 @@ async function bidirDFS(startNodeR, startNodeC, endNodeR, endNodeC) {
 
   var skip = false
 
+  var intersectCell
+
   // loop until queue is element
   while (sourceQ.length != 0) {
     // get the element from the queue
@@ -880,6 +882,7 @@ async function bidirDFS(startNodeR, startNodeC, endNodeR, endNodeC) {
         
         if(sourceV[adjRow + "," + adjCol] != null && destV[adjRow + "," + adjCol] != null) {
           complete = true
+          intersectCell = board[adjRow][adjCol]
           board[adjRow][adjCol].prevCell = board[row][col]
           console.log("COMPLETE")
           break
@@ -890,7 +893,7 @@ async function bidirDFS(startNodeR, startNodeC, endNodeR, endNodeC) {
 
         if(skip == false){
 
-          board[adjRow][adjCol].prevCell = board[row][col]
+          if(!board[adjRow][adjCol].prevCell) board[adjRow][adjCol].prevCell = board[row][col]
 
           //COMPLETE CONDITION
 
@@ -938,8 +941,9 @@ async function bidirDFS(startNodeR, startNodeC, endNodeR, endNodeC) {
 
       if(sourceV[adjRow + "," + adjCol] != null && destV[adjRow + "," + adjCol] != null) {
         complete = true
+        intersectCell = board[adjRow][adjCol]
 
-        board[row][col].prevCell = board[adjRow][adjCol]
+        board[adjRow][adjCol].prevCell = board[row][col]
 
         console.log("COMPLETE")
         break
@@ -949,7 +953,7 @@ async function bidirDFS(startNodeR, startNodeC, endNodeR, endNodeC) {
 
       if (board[adjRow][adjCol].type == CLICK_WALL) continue
 
-      board[row][col].prevCell = board[adjRow][adjCol]
+      if(!board[adjRow][adjCol].prevCell) board[adjRow][adjCol].prevCell = board[row][col]
 
       //COMPLETE CONDITION
 
@@ -965,7 +969,33 @@ async function bidirDFS(startNodeR, startNodeC, endNodeR, endNodeC) {
 
   if(complete) {
 
-    await tracePath(startNodeR, startNodeC, endNodeR, endNodeC)
+    // await Promise.all(promises)
+      
+    // let path = []
+
+    // backtrackCell = intersectCell
+  
+    // while(backtrackCell != board[startNodeR][startNodeC]){
+    //   console.log(backtrackCell)
+    //   path.push(backtrackCell)
+
+    //   backtrackCell.type = CELL_PATH
+  
+    //   await sleep (300)
+
+    //   backtrackCell = backtrackCell.prevCell
+
+    // }
+  
+    // console.log(path)
+  
+    // while(path.length != 0){
+  
+    //   let current = path.pop()
+    //   current.type = CELL_PATH
+  
+    //   await sleep (20)
+    // }
 
   }
 
@@ -977,7 +1007,7 @@ async function bidirDFS(startNodeR, startNodeC, endNodeR, endNodeC) {
 async function tracePath(startNodeR, startNodeC, endNodeR, endNodeC){
   await Promise.all(promises)
       
-  backtrackCell = board[endNodeR][endNodeC].prevCell
+  backtrackCell = board[endNodeR][endNodeC]
 
   let path = []
 
@@ -1591,8 +1621,8 @@ function handleBidirDFS() {
     return
   }
 
-  //isPathFind = true
-  //bidirDFS(startCellR, startCellC, endCellR, endCellC)
+  isPathFind = true
+  bidirDFS(startCellR, startCellC, endCellR, endCellC)
 }
 
 let boardWidth = 30+1, boardHeight = 15+2
@@ -1634,7 +1664,7 @@ function setup() {
 
   rectMode(CENTER)
   textAlign(CENTER, CENTER)
-  pixelDensity(displayDensity());
+  pixelDensity(1);
 
   console.log(board)
 
@@ -1840,7 +1870,7 @@ function windowResized() {
   var controlsHeight = document.getElementById("controlMain").offsetHeight 
   resizeCanvas(windowWidth, windowHeight - controlsHeight);
   canvasRefresh = true
-  pixelDensity(displayDensity());
+  pixelDensity(1);
 }
 
 
